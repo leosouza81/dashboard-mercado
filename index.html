@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Consumo Doméstico - Histórico de Compras</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --card-bg: #151d30;
+            --card-sub: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-green: #34d399;
+            --accent-purple: #a78bfa;
+            --accent-orange: #fb923c;
+            --accent-red: #f87171;
+            --border: #243049;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 24px; }
+        .header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 18px; }
+        .header h1 { font-size: 24px; font-weight: 700; color: #fff; }
+        .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        .badge-store { background: #0284c7; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+        .kpi-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
+        .kpi-val { font-size: 24px; font-weight: 700; margin-top: 6px; }
+        .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .chart-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: #e2e8f0; }
+
+        .section-title { font-size: 18px; font-weight: 600; margin: 24px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
+        
+        .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+        th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 10px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #cbd5e1; }
+        tr:hover { background-color: rgba(255,255,255,0.02); }
+        
+        .badge { display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 11px; font-weight: 600; }
+        .badge-prot { background: rgba(248, 113, 113, 0.18); color: #f87171; }
+        .badge-merc { background: rgba(251, 191, 36, 0.18); color: #fbbf24; }
+        .badge-lat { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
+        .badge-limp { background: rgba(168, 85, 247, 0.18); color: #c084fc; }
+        .badge-hig { background: rgba(52, 211, 153, 0.18); color: #34d399; }
+        .badge-pad { background: rgba(251, 146, 60, 0.18); color: #fb923c; }
+
+        .sub-tag { color: #94a3b8; font-size: 11px; margin-left: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Dashboard de Consumo Doméstico</h1>
+            <p>Histórico Consolidado & Detalhamento por Cupom Fiscal</p>
+        </div>
+        <div style="text-align: right;">
+            <span class="badge-store">Atacadão • Resende/RJ</span>
+            <div style="color: var(--text-muted); font-size: 12px; margin-top: 6px;">Data do Cupom: 17/08/2026</div>
+        </div>
+    </div>
+
+    <!-- KPIs Macro -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-title">Valor Líquido Pago</div>
+            <div class="kpi-val" style="color: var(--accent);">R$ 765.14</div>
+            <div class="kpi-sub">Total Bruto: R$ 773.73</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Desconto Aplicado</div>
+            <div class="kpi-val" style="color: var(--accent-green);">R$ 8.59</div>
+            <div class="kpi-sub">Economia no cupom</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Total de Itens / SKUs</div>
+            <div class="kpi-val" style="color: var(--accent-purple);">69 un / 43 itens</div>
+            <div class="kpi-sub">43 linhas registradas</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Gasto com Proteínas</div>
+            <div class="kpi-val" style="color: var(--accent-red);">R$ 301.33</div>
+            <div class="kpi-sub">39.4% do total da compra</div>
+        </div>
+    </div>
+
+    <!-- Gráficos Analíticos -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>Distribuição por Categoria Macro (R$)</h3>
+            <canvas id="macroChart" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Detalhamento do Mix de Proteínas (R$)</h3>
+            <canvas id="protChart" height="220"></canvas>
+        </div>
+    </div>
+
+    <!-- Tabela Detalhada de Proteínas -->
+    <div class="section-title">🥩 Análise Específica de Proteínas & Carnes</div>
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Subcategoria</th>
+                    <th>Corte / Produto Padronizado</th>
+                    <th>Qtd / Volume</th>
+                    <th>Preço Un.</th>
+                    <th>Desc.</th>
+                    <th>Total Pago</th>
+                    <th>% da Categoria</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td><strong>Pescado</strong></td>
+                    <td>Filé de Tilápia 800g</td>
+                    <td>1.000 PCT</td>
+                    <td>R$ 37.90</td>
+                    <td>-</td>
+                    <td style="color: var(--accent-red); font-weight: 600;">R$ 37.90</td>
+                    <td>12.6%</td>
+                </tr>
+                <tr>
+                    <td><strong>Ave/Frango</strong></td>
+                    <td>Filé Coxa/Sobrecoxa Frango 1kg</td>
+                    <td>1.000 UND</td>
+                    <td>R$ 16.90</td>
+                    <td>-</td>
+                    <td style="color: var(--accent-red); font-weight: 600;">R$ 16.90</td>
+                    <td>5.6%</td>
+                </tr>
+                <tr>
+                    <td><strong>Ave/Frango</strong></td>
+                    <td>Coxa de Frango 1kg</td>
+                    <td>2.000 PCT</td>
+                    <td>R$ 11.90</td>
+                    <td>-</td>
+                    <td style="color: var(--accent-red); font-weight: 600;">R$ 23.80</td>
+                    <td>7.9%</td>
+                </tr>
+                <tr>
+                    <td><strong>Bovino</strong></td>
+                    <td>Contrafilé Bovino Resfriado</td>
+                    <td>1.818 KG</td>
+                    <td>R$ 45.90</td>
+                    <td>-</td>
+                    <td style="color: var(--accent-red); font-weight: 600;">R$ 83.45</td>
+                    <td>27.7%</td>
+                </tr>
+                <tr>
+                    <td><strong>Ave/Frango</strong></td>
+                    <td>Carne Moída de Frango 400g</td>
+                    <td>5.000 UND</td>
+                    <td>R$ 8.99</td>
+                    <td>-R$ 2.50</td>
+                    <td style="color: var(--accent-red); font-weight: 600;">R$ 42.45</td>
+                    <td>14.1%</td>
+                </tr>
+                <tr>
+                    <td><strong>Bovino</strong></td>
+                    <td>Carne Moída Bovina 500g</td>
+                    <td>5.000 UND</td>
+                    <td>R$ 12.49</td>
+                    <td>-</td>
+                    <td style="color: var(--accent-red); font-weight: 600;">R$ 62.45</td>
+                    <td>20.7%</td>
+                </tr>
+                <tr>
+                    <td><strong>Suíno / Embutidos</strong></td>
+                    <td>Bacon Defumado</td>
+                    <td>1.150 KG</td>
+                    <td>R$ 29.90</td>
+                    <td>-</td>
+                    <td style="color: var(--accent-red); font-weight: 600;">R$ 34.38</td>
+                    <td>11.4%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tabela Geral de Itens do Cupom -->
+    <div class="section-title">🛒 Todos os Itens do Cupom Fiscal (43 SKUs)</div>
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Produto Padronizado</th>
+                    <th>Categoria</th>
+                    <th>Subcategoria</th>
+                    <th>Quantidade</th>
+                    <th>Preço Unit.</th>
+                    <th>Desconto</th>
+                    <th>Total Item</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>1</td>
+                    <td><strong>Filé de Tilápia 800g</strong></td>
+                    <td><span class="badge badge-prot">Proteínas</span></td>
+                    <td>Pescado</td>
+                    <td>1.0 PCT</td>
+                    <td>R$ 37.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 37.90</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td><strong>Filé Coxa/Sobrecoxa Frango 1kg</strong></td>
+                    <td><span class="badge badge-prot">Proteínas</span></td>
+                    <td>Ave/Frango</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 16.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 16.90</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td><strong>Coxa de Frango 1kg</strong></td>
+                    <td><span class="badge badge-prot">Proteínas</span></td>
+                    <td>Ave/Frango</td>
+                    <td>2.0 PCT</td>
+                    <td>R$ 11.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 23.80</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td><strong>Contrafilé Bovino Resfriado</strong></td>
+                    <td><span class="badge badge-prot">Proteínas</span></td>
+                    <td>Bovino</td>
+                    <td>1.818 KG</td>
+                    <td>R$ 45.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 83.45</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td><strong>Carne Moída de Frango 400g</strong></td>
+                    <td><span class="badge badge-prot">Proteínas</span></td>
+                    <td>Ave/Frango</td>
+                    <td>5.0 UND</td>
+                    <td>R$ 8.99</td>
+                    <td>-R$ 2.50</td>
+                    <td style="font-weight: 600;">R$ 42.45</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td><strong>Carne Moída Bovina 500g</strong></td>
+                    <td><span class="badge badge-prot">Proteínas</span></td>
+                    <td>Bovino</td>
+                    <td>5.0 UND</td>
+                    <td>R$ 12.49</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 62.45</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td><strong>Bacon Defumado</strong></td>
+                    <td><span class="badge badge-prot">Proteínas</span></td>
+                    <td>Suíno / Embutidos</td>
+                    <td>1.15 KG</td>
+                    <td>R$ 29.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 34.38</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td><strong>Biscoito Maizena Piraquê 175g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Biscoitos/Snacks</td>
+                    <td>4.0 UND</td>
+                    <td>R$ 2.98</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 11.92</td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td><strong>Cookies Marilan 40g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Biscoitos/Snacks</td>
+                    <td>3.0 UND</td>
+                    <td>R$ 1.49</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 4.47</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td><strong>Biscoito Wafer Marilan 70g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Biscoitos/Snacks</td>
+                    <td>2.0 UND</td>
+                    <td>R$ 1.79</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 3.58</td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td><strong>Biscoito Rancheiro 78g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Biscoitos/Snacks</td>
+                    <td>2.0 PCT</td>
+                    <td>R$ 1.65</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 3.30</td>
+                </tr>
+                <tr>
+                    <td>12</td>
+                    <td><strong>Biscoito Wafer Marilan 70g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Biscoitos/Snacks</td>
+                    <td>2.0 UND</td>
+                    <td>R$ 1.79</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 3.58</td>
+                </tr>
+                <tr>
+                    <td>13</td>
+                    <td><strong>Biscoito Rancheiro 78g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Biscoitos/Snacks</td>
+                    <td>2.0 UND</td>
+                    <td>R$ 1.65</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 3.30</td>
+                </tr>
+                <tr>
+                    <td>14</td>
+                    <td><strong>Biscoito Leite Maltado Piraquê 132g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Biscoitos/Snacks</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 3.49</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 3.49</td>
+                </tr>
+                <tr>
+                    <td>15</td>
+                    <td><strong>Batata Palha Crac 400g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Salgadinhos/Snacks</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 15.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 15.90</td>
+                </tr>
+                <tr>
+                    <td>16</td>
+                    <td><strong>Iogurte Danone Morango 1.25kg</strong></td>
+                    <td><span class="badge badge-lat">Laticínios</span></td>
+                    <td>Iogurtes</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 16.99</td>
+                    <td>-R$ 6.09</td>
+                    <td style="font-weight: 600;">R$ 10.90</td>
+                </tr>
+                <tr>
+                    <td>17</td>
+                    <td><strong>Pão de Forma Panco 500g</strong></td>
+                    <td><span class="badge badge-pad">Padaria/Matinais</span></td>
+                    <td>Pães</td>
+                    <td>1.0 PCT</td>
+                    <td>R$ 8.99</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 8.99</td>
+                </tr>
+                <tr>
+                    <td>18</td>
+                    <td><strong>Bisnaguinha Panco Sponge 250g</strong></td>
+                    <td><span class="badge badge-pad">Padaria/Matinais</span></td>
+                    <td>Pães</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 15.70</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 15.70</td>
+                </tr>
+                <tr>
+                    <td>19</td>
+                    <td><strong>Toalha de Papel Kitchen c/ 2 un</strong></td>
+                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
+                    <td>Papéis</td>
+                    <td>2.0 UND</td>
+                    <td>R$ 6.49</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 12.98</td>
+                </tr>
+                <tr>
+                    <td>20</td>
+                    <td><strong>Esponja Ypê L4P3</strong></td>
+                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
+                    <td>Utensílios de Limpeza</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 5.49</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 5.49</td>
+                </tr>
+                <tr>
+                    <td>21</td>
+                    <td><strong>Detergente Líquido Minuano 500ml</strong></td>
+                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
+                    <td>Louça</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 2.25</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 2.25</td>
+                </tr>
+                <tr>
+                    <td>22</td>
+                    <td><strong>Detergente Líquido Minuano 500ml</strong></td>
+                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
+                    <td>Louça</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 2.25</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 2.25</td>
+                </tr>
+                <tr>
+                    <td>23</td>
+                    <td><strong>Sabão em Pó Tixan 2.4kg</strong></td>
+                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
+                    <td>Lavanderia</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 20.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 20.90</td>
+                </tr>
+                <tr>
+                    <td>24</td>
+                    <td><strong>Detergente Líquido Minuano 500ml</strong></td>
+                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
+                    <td>Louça</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 2.25</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 2.25</td>
+                </tr>
+                <tr>
+                    <td>25</td>
+                    <td><strong>Papel Higiênico Personal Vip 20 Rolos 50m</strong></td>
+                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
+                    <td>Papel Higiênico</td>
+                    <td>2.0 UND</td>
+                    <td>R$ 42.98</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 85.96</td>
+                </tr>
+                <tr>
+                    <td>26</td>
+                    <td><strong>Sabonete Líquido Lux 200ml</strong></td>
+                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
+                    <td>Sabonetes</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 9.29</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 9.29</td>
+                </tr>
+                <tr>
+                    <td>27</td>
+                    <td><strong>Sabonete Líquido Lux 200ml</strong></td>
+                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
+                    <td>Sabonetes</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 9.29</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 9.29</td>
+                </tr>
+                <tr>
+                    <td>28</td>
+                    <td><strong>Sabonete Líquido Lux Refil 200ml</strong></td>
+                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
+                    <td>Sabonetes</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 9.29</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 9.29</td>
+                </tr>
+                <tr>
+                    <td>29</td>
+                    <td><strong>Sabonete Líquido Lux Refil 200ml</strong></td>
+                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
+                    <td>Sabonetes</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 9.29</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 9.29</td>
+                </tr>
+                <tr>
+                    <td>30</td>
+                    <td><strong>Refil Difusor Bom Ar 32ml</strong></td>
+                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
+                    <td>Aromatizantes</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 35.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 35.90</td>
+                </tr>
+                <tr>
+                    <td>31</td>
+                    <td><strong>Escova Dental Oral-B 1un</strong></td>
+                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
+                    <td>Higiene Bucal</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 14.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 14.90</td>
+                </tr>
+                <tr>
+                    <td>32</td>
+                    <td><strong>Creme Dental Close Up 70g</strong></td>
+                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
+                    <td>Higiene Bucal</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 3.79</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 3.79</td>
+                </tr>
+                <tr>
+                    <td>33</td>
+                    <td><strong>Guardanapo Papel Coquetel</strong></td>
+                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
+                    <td>Papéis / Guardanapos</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 7.79</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 7.79</td>
+                </tr>
+                <tr>
+                    <td>34</td>
+                    <td><strong>Leite Integral Piracanjuba 1L</strong></td>
+                    <td><span class="badge badge-lat">Laticínios</span></td>
+                    <td>Leite</td>
+                    <td>2.0 UND</td>
+                    <td>R$ 5.69</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 11.38</td>
+                </tr>
+                <tr>
+                    <td>35</td>
+                    <td><strong>Café Melitta 500g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Café</td>
+                    <td>2.0 UND</td>
+                    <td>R$ 26.90</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 53.80</td>
+                </tr>
+                <tr>
+                    <td>36</td>
+                    <td><strong>Macarrão Adria Fidelinho 500g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Massas</td>
+                    <td>3.0 PCT</td>
+                    <td>R$ 4.69</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 14.07</td>
+                </tr>
+                <tr>
+                    <td>37</td>
+                    <td><strong>Feijão Preto Kicaldo 1kg</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Grãos & Cereais</td>
+                    <td>1.0 PCT</td>
+                    <td>R$ 6.69</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 6.69</td>
+                </tr>
+                <tr>
+                    <td>38</td>
+                    <td><strong>Feijão Preto Bulnez 1kg</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Grãos & Cereais</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 5.79</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 5.79</td>
+                </tr>
+                <tr>
+                    <td>39</td>
+                    <td><strong>Iogurte YoPRO 160g</strong></td>
+                    <td><span class="badge badge-lat">Laticínios</span></td>
+                    <td>Iogurtes / Proteicos</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 9.99</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 9.99</td>
+                </tr>
+                <tr>
+                    <td>40</td>
+                    <td><strong>Açúcar Refinado União 1kg</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Açúcar & Adoçantes</td>
+                    <td>2.0 PCT</td>
+                    <td>R$ 3.49</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 6.98</td>
+                </tr>
+                <tr>
+                    <td>41</td>
+                    <td><strong>Extrato de Tomate Elefante 300g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Molhos & Condimentos</td>
+                    <td>1.0 PTE</td>
+                    <td>R$ 7.49</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 7.49</td>
+                </tr>
+                <tr>
+                    <td>42</td>
+                    <td><strong>Extrato de Tomate Elefante 300g</strong></td>
+                    <td><span class="badge badge-merc">Mercearia</span></td>
+                    <td>Molhos & Condimentos</td>
+                    <td>2.0 PTE</td>
+                    <td>R$ 7.49</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 14.98</td>
+                </tr>
+                <tr>
+                    <td>43</td>
+                    <td><strong>Leite em Pó Ninho Integral 380g</strong></td>
+                    <td><span class="badge badge-lat">Laticínios</span></td>
+                    <td>Leite em Pó</td>
+                    <td>1.0 UND</td>
+                    <td>R$ 15.89</td>
+                    <td>-</td>
+                    <td style="font-weight: 600;">R$ 15.89</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Macro Chart
+        new Chart(document.getElementById('macroChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ["Prote\u00ednas", "Mercearia", "Higiene & Cuidados", "Limpeza & Descart\u00e1veis", "Latic\u00ednios", "Padaria/Matinais"],
+                datasets: [{
+                    data: [301.33, 159.34, 141.81, 89.81, 48.16, 24.69],
+                    backgroundColor: ['#f87171', '#c084fc', '#34d399', '#fbbf24', '#38bdf8', '#fb923c'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 12, padding: 12 } }
+                }
+            }
+        });
+
+        // Prot Chart
+        new Chart(document.getElementById('protChart'), {
+            type: 'bar',
+            data: {
+                labels: ["Bovino", "Ave/Frango", "Pescado", "Su\u00edno / Embutidos"],
+                datasets: [{
+                    label: 'Gasto em Proteínas (R$)',
+                    data: [145.9, 83.15, 37.9, 34.38],
+                    backgroundColor: ['#f87171', '#fb923c', '#38bdf8', '#a78bfa'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { grid: { color: '#243049' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: '#243049' }, ticks: { color: '#94a3b8' } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
