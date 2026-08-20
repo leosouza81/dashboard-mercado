@@ -17,6 +17,7 @@
             --accent-purple: #a78bfa;
             --accent-orange: #fb923c;
             --accent-red: #f87171;
+            --accent-teal: #2dd4bf;
             --border: #243049;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -24,8 +25,13 @@
         .header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 18px; }
         .header h1 { font-size: 24px; font-weight: 700; color: #fff; }
         .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
-        .badge-tag { background: #0284c7; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-
+        
+        .filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border); }
+        .filter-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; background: #1e293b; border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; }
+        .filter-chip:hover, .filter-chip.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
+        .btn-reset { margin-left: auto; font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; text-decoration: underline; }
+        
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
         .kpi-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
@@ -33,14 +39,16 @@
         .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px; }
-        .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-        .chart-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: #e2e8f0; }
+        .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .chart-card h3 { font-size: 15px; font-weight: 600; color: #e2e8f0; }
+        .chart-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-size: 13px; outline: none; }
 
-        .section-title { font-size: 18px; font-weight: 600; margin: 28px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
+        .section-title { font-size: 18px; font-weight: 600; margin: 28px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
         
-        .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto; }
+        .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto; max-height: 480px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
-        th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 10px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+        th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 10px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; position: sticky; top: 0; background: var(--card-bg); }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #cbd5e1; }
         tr:hover { background-color: rgba(255,255,255,0.02); }
         
@@ -53,53 +61,69 @@
         .badge-pad { background: rgba(251, 146, 60, 0.18); color: #fb923c; }
         .badge-beb { background: rgba(236, 72, 153, 0.18); color: #f472b6; }
         .badge-horti { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
+        .badge-farma { background: rgba(45, 212, 191, 0.18); color: #2dd4bf; }
     </style>
 </head>
 <body>
     <div class="header">
         <div>
-            <h1>Dashboard de Consumo Doméstico</h1>
-            <p>Visão Consolidada Multi-Mercados • Histórico Acumulado</p>
+            <h1>Dashboard de Consumo Doméstico & Saúde</h1>
+            <p>Visão Consolidada Multi-Mercados e Farmácias • Interativo</p>
         </div>
         <div style="text-align: right;">
-            <span class="badge-tag">2 Compras Consolidadas</span>
-            <div style="color: var(--text-muted); font-size: 12px; margin-top: 6px;">Última Atualização: 17/08/2026</div>
+            <span style="background: #0284c7; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">3 Compras Consolidadas</span>
+            <div style="color: var(--text-muted); font-size: 12px; margin-top: 6px;">Última Atualização: 19/08/2026</div>
         </div>
     </div>
 
-    <!-- KPIs Macro -->
+    <!-- Barra de Filtro Ativo -->
+    <div class="filter-bar">
+        <span class="filter-label">Filtro de Categoria:</span>
+        <div id="chipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+        <button class="btn-reset" onclick="selectCategory('TODAS')">Limpar Filtro</button>
+    </div>
+
+    <!-- KPIs Macro Dinâmicos -->
     <div class="kpi-grid">
         <div class="kpi-card">
-            <div class="kpi-title">Total Acumulado Gasto</div>
-            <div class="kpi-val" style="color: var(--accent);">R$ 1.463,82</div>
-            <div class="kpi-sub">2 compras registradas</div>
+            <div class="kpi-title" id="kpiTitleGasto">Gasto Total (Filtro)</div>
+            <div class="kpi-val" style="color: var(--accent);" id="kpiGasto">R$ 0,00</div>
+            <div class="kpi-sub" id="kpiGastoSub">Consolidado</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">Ticket Médio por Ida</div>
-            <div class="kpi-val" style="color: var(--accent-green);">R$ 731,91</div>
-            <div class="kpi-sub">Média Atacadão & Dom Atacadista</div>
+            <div class="kpi-val" style="color: var(--accent-green);" id="kpiTicket">R$ 0,00</div>
+            <div class="kpi-sub">Por cupom fiscal</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-title">Gasto com Proteínas</div>
-            <div class="kpi-val" style="color: var(--accent-red);">R$ 528,30</div>
-            <div class="kpi-sub">36,1% do gasto total</div>
+            <div class="kpi-title">% Sobre o Total Geral</div>
+            <div class="kpi-val" style="color: var(--accent-orange);" id="kpiShare">100%</div>
+            <div class="kpi-sub">Participação orçamentária</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-title">Total de SKUs / Itens</div>
-            <div class="kpi-val" style="color: var(--accent-purple);">101 registros</div>
-            <div class="kpi-sub">156,2 unidades/kg no total</div>
+            <div class="kpi-title">SKUs Filtrados</div>
+            <div class="kpi-val" style="color: var(--accent-purple);" id="kpiItens">0 itens</div>
+            <div class="kpi-sub" id="kpiVolumeSub">Volume total</div>
         </div>
     </div>
 
     <!-- Gráficos Analíticos -->
     <div class="charts-grid">
         <div class="chart-card">
-            <h3>Distribuição Consolidada por Categoria (R$)</h3>
-            <canvas id="catChart" height="220"></canvas>
+            <div class="chart-header">
+                <h3>Distribuição por Categoria Macro (R$)</h3>
+                <span style="font-size: 11px; color: var(--text-muted);">(Clique na fatia para filtrar)</span>
+            </div>
+            <canvas id="catChart" height="230"></canvas>
         </div>
         <div class="chart-card">
-            <h3>Mix Acumulado de Proteínas por Subcategoria (R$)</h3>
-            <canvas id="protChart" height="220"></canvas>
+            <div class="chart-header">
+                <h3 id="barChartTitle">Subcategorias / Itens (R$)</h3>
+                <select class="chart-select" id="catSelect" onchange="selectCategory(this.value)">
+                    <option value="TODAS">Todas as Categorias</option>
+                </select>
+            </div>
+            <canvas id="subChart" height="230"></canvas>
         </div>
     </div>
 
@@ -113,9 +137,9 @@
                     <th>Data</th>
                     <th>Estabelecimento</th>
                     <th>Qtd Linhas</th>
+                    <th>Total Bruto</th>
+                    <th>Desconto</th>
                     <th>Total Líquido</th>
-                    <th>Gasto em Proteínas</th>
-                    <th>% Proteínas</th>
                 </tr>
             </thead>
             <tbody>
@@ -124,165 +148,37 @@
                     <td>17/08/2026</td>
                     <td>Atacadão S.A.</td>
                     <td>43 SKUs</td>
-                    <td>R$ 765,14</td>
-                    <td>R$ 301,33</td>
-                    <td>39,4%</td>
+                    <td>R$ 773,73</td>
+                    <td>-R$ 8,59</td>
+                    <td><strong>R$ 765,14</strong></td>
                 </tr>
                 <tr>
                     <td><strong>#2</strong></td>
                     <td>17/08/2026</td>
                     <td>Dom Atacadista</td>
                     <td>58 SKUs</td>
-                    <td>R$ 698,65</td>
-                    <td>R$ 227,89</td>
-                    <td>32,6%</td>
+                    <td>R$ 702,15</td>
+                    <td>-R$ 3,50</td>
+                    <td><strong>R$ 698,65</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>#3</strong></td>
+                    <td>19/08/2026</td>
+                    <td>Drogaria Campos Eliseos</td>
+                    <td>9 SKUs</td>
+                    <td>R$ 333,85</td>
+                    <td>-R$ 47,07</td>
+                    <td><strong>R$ 286,78</strong></td>
                 </tr>
             </tbody>
         </table>
     </div>
 
-    <!-- Tabela Detalhada de Proteínas Consolidada -->
-    <div class="section-title">🥩 Acumulado de Proteínas & Carnes (R$ 528,30 Total)</div>
-    <div class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>Subcategoria</th>
-                    <th>Corte / Produto Padronizado</th>
-                    <th>Estabelecimento</th>
-                    <th>Qtd / Volume</th>
-                    <th>Preço Unit.</th>
-                    <th>Total Item</th>
-                </tr>
-            </thead>
-            <tbody>
-
-                <tr>
-                    <td><strong>Pescado</strong></td>
-                    <td>Filé de Tilápia 800g</td>
-                    <td>Atacadão S.A.</td>
-                    <td>1 PCT</td>
-                    <td>R$ 37,90</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 37,90</td>
-                </tr>
-                <tr>
-                    <td><strong>Ave/Frango</strong></td>
-                    <td>Filé Coxa/Sobrecoxa Frango 1kg</td>
-                    <td>Atacadão S.A.</td>
-                    <td>1 UND</td>
-                    <td>R$ 16,90</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 16,90</td>
-                </tr>
-                <tr>
-                    <td><strong>Ave/Frango</strong></td>
-                    <td>Coxa de Frango 1kg</td>
-                    <td>Atacadão S.A.</td>
-                    <td>2 PCT</td>
-                    <td>R$ 11,90</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 23,80</td>
-                </tr>
-                <tr>
-                    <td><strong>Bovino</strong></td>
-                    <td>Contrafilé Bovino Resfriado</td>
-                    <td>Atacadão S.A.</td>
-                    <td>1,818 KG</td>
-                    <td>R$ 45,90</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 83,45</td>
-                </tr>
-                <tr>
-                    <td><strong>Ave/Frango</strong></td>
-                    <td>Carne Moída de Frango 400g</td>
-                    <td>Atacadão S.A.</td>
-                    <td>5 UND</td>
-                    <td>R$ 8,99</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 42,45</td>
-                </tr>
-                <tr>
-                    <td><strong>Bovino</strong></td>
-                    <td>Carne Moída Bovina 500g</td>
-                    <td>Atacadão S.A.</td>
-                    <td>5 UND</td>
-                    <td>R$ 12,49</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 62,45</td>
-                </tr>
-                <tr>
-                    <td><strong>Suíno / Embutidos</strong></td>
-                    <td>Bacon Defumado</td>
-                    <td>Atacadão S.A.</td>
-                    <td>1,15 KG</td>
-                    <td>R$ 29,90</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 34,38</td>
-                </tr>
-                <tr>
-                    <td><strong>Ave/Frango</strong></td>
-                    <td>Filé de Peito de Frango 1kg</td>
-                    <td>Dom Atacadista</td>
-                    <td>1 BDJ</td>
-                    <td>R$ 17,98</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 17,98</td>
-                </tr>
-                <tr>
-                    <td><strong>Ave/Frango</strong></td>
-                    <td>Meio da Asa (Tulipa) Frango 1kg</td>
-                    <td>Dom Atacadista</td>
-                    <td>3 PCT</td>
-                    <td>R$ 26,98</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 80,94</td>
-                </tr>
-                <tr>
-                    <td><strong>Bovino / Misto</strong></td>
-                    <td>Hambúrguer Misto Friboi 672g</td>
-                    <td>Dom Atacadista</td>
-                    <td>1 UND</td>
-                    <td>R$ 16,99</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 16,99</td>
-                </tr>
-                <tr>
-                    <td><strong>Ovos</strong></td>
-                    <td>Ovos de Codorna 200g</td>
-                    <td>Dom Atacadista</td>
-                    <td>1 PCT</td>
-                    <td>R$ 8,99</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 8,99</td>
-                </tr>
-                <tr>
-                    <td><strong>Ave/Frango</strong></td>
-                    <td>Meio da Asa (Tulipa) Frango 1kg</td>
-                    <td>Dom Atacadista</td>
-                    <td>1 PCT</td>
-                    <td>R$ 26,98</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 26,98</td>
-                </tr>
-                <tr>
-                    <td><strong>Suíno</strong></td>
-                    <td>Filé Mignon Suíno Temperado</td>
-                    <td>Dom Atacadista</td>
-                    <td>0,978 KG</td>
-                    <td>R$ 33,98</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 33,23</td>
-                </tr>
-                <tr>
-                    <td><strong>Suíno / Embutidos</strong></td>
-                    <td>Linguiça de Pernil Seara 600g</td>
-                    <td>Dom Atacadista</td>
-                    <td>1 UND</td>
-                    <td>R$ 11,89</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 11,89</td>
-                </tr>
-                <tr>
-                    <td><strong>Pescado</strong></td>
-                    <td>Atum Sólido Pescador 140g</td>
-                    <td>Dom Atacadista</td>
-                    <td>3 UN</td>
-                    <td>R$ 9,99</td>
-                    <td style="color: var(--accent-red); font-weight: 600;">R$ 29,97</td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Tabela Geral Filtrável -->
+    <div class="section-title">
+        <span id="tableTitle">🛒 Itens Registrados</span>
+        <span style="font-size: 13px; color: var(--text-muted);" id="tableCount"></span>
     </div>
-
-    <!-- Tabela Geral de Itens Consolidados -->
-    <div class="section-title">🛒 Todos os Itens Registrados (101 Itens)</div>
     <div class="table-card">
         <table>
             <thead>
@@ -294,1193 +190,244 @@
                     <th>Categoria</th>
                     <th>Subcategoria</th>
                     <th>Qtd</th>
-                    <th>Preço Unit.</th>
+                    <th>Preço Un.</th>
                     <th>Total</th>
                 </tr>
             </thead>
-            <tbody>
-
-                <tr>
-                    <td>1</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Filé de Tilápia 800g</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Pescado</td>
-                    <td>1 PCT</td>
-                    <td>R$ 37,90</td>
-                    <td style="font-weight: 600;">R$ 37,90</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Filé Coxa/Sobrecoxa Frango 1kg</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Ave/Frango</td>
-                    <td>1 UND</td>
-                    <td>R$ 16,90</td>
-                    <td style="font-weight: 600;">R$ 16,90</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Coxa de Frango 1kg</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Ave/Frango</td>
-                    <td>2 PCT</td>
-                    <td>R$ 11,90</td>
-                    <td style="font-weight: 600;">R$ 23,80</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Contrafilé Bovino Resfriado</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Bovino</td>
-                    <td>1,818 KG</td>
-                    <td>R$ 45,90</td>
-                    <td style="font-weight: 600;">R$ 83,45</td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Carne Moída de Frango 400g</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Ave/Frango</td>
-                    <td>5 UND</td>
-                    <td>R$ 8,99</td>
-                    <td style="font-weight: 600;">R$ 42,45</td>
-                </tr>
-                <tr>
-                    <td>6</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Carne Moída Bovina 500g</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Bovino</td>
-                    <td>5 UND</td>
-                    <td>R$ 12,49</td>
-                    <td style="font-weight: 600;">R$ 62,45</td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Bacon Defumado</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Suíno / Embutidos</td>
-                    <td>1,15 KG</td>
-                    <td>R$ 29,90</td>
-                    <td style="font-weight: 600;">R$ 34,38</td>
-                </tr>
-                <tr>
-                    <td>8</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Biscoito Maizena Piraquê 175g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>4 UND</td>
-                    <td>R$ 2,98</td>
-                    <td style="font-weight: 600;">R$ 11,92</td>
-                </tr>
-                <tr>
-                    <td>9</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Cookies Marilan 40g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>3 UND</td>
-                    <td>R$ 1,49</td>
-                    <td style="font-weight: 600;">R$ 4,47</td>
-                </tr>
-                <tr>
-                    <td>10</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Biscoito Wafer Marilan 70g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>2 UND</td>
-                    <td>R$ 1,79</td>
-                    <td style="font-weight: 600;">R$ 3,58</td>
-                </tr>
-                <tr>
-                    <td>11</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Biscoito Rancheiro 78g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>2 PCT</td>
-                    <td>R$ 1,65</td>
-                    <td style="font-weight: 600;">R$ 3,30</td>
-                </tr>
-                <tr>
-                    <td>12</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Biscoito Wafer Marilan 70g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>2 UND</td>
-                    <td>R$ 1,79</td>
-                    <td style="font-weight: 600;">R$ 3,58</td>
-                </tr>
-                <tr>
-                    <td>13</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Biscoito Rancheiro 78g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>2 UND</td>
-                    <td>R$ 1,65</td>
-                    <td style="font-weight: 600;">R$ 3,30</td>
-                </tr>
-                <tr>
-                    <td>14</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Biscoito Leite Maltado Piraquê 132g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>1 UND</td>
-                    <td>R$ 3,49</td>
-                    <td style="font-weight: 600;">R$ 3,49</td>
-                </tr>
-                <tr>
-                    <td>15</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Batata Palha Crac 400g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Salgadinhos/Snacks</td>
-                    <td>1 UND</td>
-                    <td>R$ 15,90</td>
-                    <td style="font-weight: 600;">R$ 15,90</td>
-                </tr>
-                <tr>
-                    <td>16</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Iogurte Danone Morango 1.25kg</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Iogurtes</td>
-                    <td>1 UND</td>
-                    <td>R$ 16,99</td>
-                    <td style="font-weight: 600;">R$ 10,90</td>
-                </tr>
-                <tr>
-                    <td>17</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Pão de Forma Panco 500g</strong></td>
-                    <td><span class="badge badge-pad">Padaria/Matinais</span></td>
-                    <td>Pães</td>
-                    <td>1 PCT</td>
-                    <td>R$ 8,99</td>
-                    <td style="font-weight: 600;">R$ 8,99</td>
-                </tr>
-                <tr>
-                    <td>18</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Bisnaguinha Panco Sponge 250g</strong></td>
-                    <td><span class="badge badge-pad">Padaria/Matinais</span></td>
-                    <td>Pães</td>
-                    <td>1 UND</td>
-                    <td>R$ 15,70</td>
-                    <td style="font-weight: 600;">R$ 15,70</td>
-                </tr>
-                <tr>
-                    <td>19</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Toalha de Papel Kitchen c/ 2 un</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Papéis</td>
-                    <td>2 UND</td>
-                    <td>R$ 6,49</td>
-                    <td style="font-weight: 600;">R$ 12,98</td>
-                </tr>
-                <tr>
-                    <td>20</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Esponja Ypê L4P3</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Utensílios de Limpeza</td>
-                    <td>1 UND</td>
-                    <td>R$ 5,49</td>
-                    <td style="font-weight: 600;">R$ 5,49</td>
-                </tr>
-                <tr>
-                    <td>21</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Detergente Líquido Minuano 500ml</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Louça</td>
-                    <td>1 UND</td>
-                    <td>R$ 2,25</td>
-                    <td style="font-weight: 600;">R$ 2,25</td>
-                </tr>
-                <tr>
-                    <td>22</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Detergente Líquido Minuano 500ml</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Louça</td>
-                    <td>1 UND</td>
-                    <td>R$ 2,25</td>
-                    <td style="font-weight: 600;">R$ 2,25</td>
-                </tr>
-                <tr>
-                    <td>23</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Sabão em Pó Tixan 2.4kg</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Lavanderia</td>
-                    <td>1 UND</td>
-                    <td>R$ 20,90</td>
-                    <td style="font-weight: 600;">R$ 20,90</td>
-                </tr>
-                <tr>
-                    <td>24</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Detergente Líquido Minuano 500ml</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Louça</td>
-                    <td>1 UND</td>
-                    <td>R$ 2,25</td>
-                    <td style="font-weight: 600;">R$ 2,25</td>
-                </tr>
-                <tr>
-                    <td>25</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Papel Higiênico Personal Vip 20 Rolos 50m</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Papel Higiênico</td>
-                    <td>2 UND</td>
-                    <td>R$ 42,98</td>
-                    <td style="font-weight: 600;">R$ 85,96</td>
-                </tr>
-                <tr>
-                    <td>26</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Sabonete Líquido Lux 200ml</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Sabonetes</td>
-                    <td>1 UND</td>
-                    <td>R$ 9,29</td>
-                    <td style="font-weight: 600;">R$ 9,29</td>
-                </tr>
-                <tr>
-                    <td>27</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Sabonete Líquido Lux 200ml</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Sabonetes</td>
-                    <td>1 UND</td>
-                    <td>R$ 9,29</td>
-                    <td style="font-weight: 600;">R$ 9,29</td>
-                </tr>
-                <tr>
-                    <td>28</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Sabonete Líquido Lux Refil 200ml</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Sabonetes</td>
-                    <td>1 UND</td>
-                    <td>R$ 9,29</td>
-                    <td style="font-weight: 600;">R$ 9,29</td>
-                </tr>
-                <tr>
-                    <td>29</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Sabonete Líquido Lux Refil 200ml</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Sabonetes</td>
-                    <td>1 UND</td>
-                    <td>R$ 9,29</td>
-                    <td style="font-weight: 600;">R$ 9,29</td>
-                </tr>
-                <tr>
-                    <td>30</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Refil Difusor Bom Ar 32ml</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Aromatizantes</td>
-                    <td>1 UND</td>
-                    <td>R$ 35,90</td>
-                    <td style="font-weight: 600;">R$ 35,90</td>
-                </tr>
-                <tr>
-                    <td>31</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Escova Dental Oral-B 1un</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Higiene Bucal</td>
-                    <td>1 UND</td>
-                    <td>R$ 14,90</td>
-                    <td style="font-weight: 600;">R$ 14,90</td>
-                </tr>
-                <tr>
-                    <td>32</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Creme Dental Close Up 70g</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Higiene Bucal</td>
-                    <td>1 UND</td>
-                    <td>R$ 3,79</td>
-                    <td style="font-weight: 600;">R$ 3,79</td>
-                </tr>
-                <tr>
-                    <td>33</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Guardanapo Papel Coquetel</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Papéis / Guardanapos</td>
-                    <td>1 UND</td>
-                    <td>R$ 7,79</td>
-                    <td style="font-weight: 600;">R$ 7,79</td>
-                </tr>
-                <tr>
-                    <td>34</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Leite Integral Piracanjuba 1L</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Leite</td>
-                    <td>2 UND</td>
-                    <td>R$ 5,69</td>
-                    <td style="font-weight: 600;">R$ 11,38</td>
-                </tr>
-                <tr>
-                    <td>35</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Café Melitta 500g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Café</td>
-                    <td>2 UND</td>
-                    <td>R$ 26,90</td>
-                    <td style="font-weight: 600;">R$ 53,80</td>
-                </tr>
-                <tr>
-                    <td>36</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Macarrão Adria Fidelinho 500g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Massas</td>
-                    <td>3 PCT</td>
-                    <td>R$ 4,69</td>
-                    <td style="font-weight: 600;">R$ 14,07</td>
-                </tr>
-                <tr>
-                    <td>37</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Feijão Preto Kicaldo 1kg</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Grãos & Cereais</td>
-                    <td>1 PCT</td>
-                    <td>R$ 6,69</td>
-                    <td style="font-weight: 600;">R$ 6,69</td>
-                </tr>
-                <tr>
-                    <td>38</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Feijão Preto Bulnez 1kg</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Grãos & Cereais</td>
-                    <td>1 UND</td>
-                    <td>R$ 5,79</td>
-                    <td style="font-weight: 600;">R$ 5,79</td>
-                </tr>
-                <tr>
-                    <td>39</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Iogurte YoPRO 160g</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Iogurtes / Proteicos</td>
-                    <td>1 UND</td>
-                    <td>R$ 9,99</td>
-                    <td style="font-weight: 600;">R$ 9,99</td>
-                </tr>
-                <tr>
-                    <td>40</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Açúcar Refinado União 1kg</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Açúcar & Adoçantes</td>
-                    <td>2 PCT</td>
-                    <td>R$ 3,49</td>
-                    <td style="font-weight: 600;">R$ 6,98</td>
-                </tr>
-                <tr>
-                    <td>41</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Extrato de Tomate Elefante 300g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Molhos & Condimentos</td>
-                    <td>1 PTE</td>
-                    <td>R$ 7,49</td>
-                    <td style="font-weight: 600;">R$ 7,49</td>
-                </tr>
-                <tr>
-                    <td>42</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Extrato de Tomate Elefante 300g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Molhos & Condimentos</td>
-                    <td>2 PTE</td>
-                    <td>R$ 7,49</td>
-                    <td style="font-weight: 600;">R$ 14,98</td>
-                </tr>
-                <tr>
-                    <td>43</td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td><strong>Leite em Pó Ninho Integral 380g</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Leite em Pó</td>
-                    <td>1 UND</td>
-                    <td>R$ 15,89</td>
-                    <td style="font-weight: 600;">R$ 15,89</td>
-                </tr>
-                <tr>
-                    <td>44</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Filé de Peito de Frango 1kg</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Ave/Frango</td>
-                    <td>1 BDJ</td>
-                    <td>R$ 17,98</td>
-                    <td style="font-weight: 600;">R$ 17,98</td>
-                </tr>
-                <tr>
-                    <td>45</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Meio da Asa (Tulipa) Frango 1kg</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Ave/Frango</td>
-                    <td>3 PCT</td>
-                    <td>R$ 26,98</td>
-                    <td style="font-weight: 600;">R$ 80,94</td>
-                </tr>
-                <tr>
-                    <td>46</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Hambúrguer Misto Friboi 672g</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Bovino / Misto</td>
-                    <td>1 UND</td>
-                    <td>R$ 16,99</td>
-                    <td style="font-weight: 600;">R$ 16,99</td>
-                </tr>
-                <tr>
-                    <td>47</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Ovos de Codorna 200g</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Ovos</td>
-                    <td>1 PCT</td>
-                    <td>R$ 8,99</td>
-                    <td style="font-weight: 600;">R$ 8,99</td>
-                </tr>
-                <tr>
-                    <td>48</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Meio da Asa (Tulipa) Frango 1kg</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Ave/Frango</td>
-                    <td>1 PCT</td>
-                    <td>R$ 26,98</td>
-                    <td style="font-weight: 600;">R$ 26,98</td>
-                </tr>
-                <tr>
-                    <td>49</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Iogurte Danone Coco 1.25kg</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Iogurtes</td>
-                    <td>1 UND</td>
-                    <td>R$ 18,99</td>
-                    <td style="font-weight: 600;">R$ 18,99</td>
-                </tr>
-                <tr>
-                    <td>50</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Filé Mignon Suíno Temperado</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Suíno</td>
-                    <td>0,978 KG</td>
-                    <td>R$ 33,98</td>
-                    <td style="font-weight: 600;">R$ 33,23</td>
-                </tr>
-                <tr>
-                    <td>51</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Linguiça de Pernil Seara 600g</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Suíno / Embutidos</td>
-                    <td>1 UND</td>
-                    <td>R$ 11,89</td>
-                    <td style="font-weight: 600;">R$ 11,89</td>
-                </tr>
-                <tr>
-                    <td>52</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Iogurte Grego Batavo Flocos 90g</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Iogurtes</td>
-                    <td>1 UND</td>
-                    <td>R$ 3,49</td>
-                    <td style="font-weight: 600;">R$ 3,49</td>
-                </tr>
-                <tr>
-                    <td>53</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Salgadinho Fofura Queijo 60g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Salgadinhos/Snacks</td>
-                    <td>2 UND</td>
-                    <td>R$ 1,89</td>
-                    <td style="font-weight: 600;">R$ 3,78</td>
-                </tr>
-                <tr>
-                    <td>54</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Torrada Crocantíssimo Queijo/Cebola 40g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Torradas/Snacks</td>
-                    <td>2 PCT</td>
-                    <td>R$ 2,49</td>
-                    <td style="font-weight: 600;">R$ 4,98</td>
-                </tr>
-                <tr>
-                    <td>55</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Salgadinho Fofura Churrasco 60g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Salgadinhos/Snacks</td>
-                    <td>1 UND</td>
-                    <td>R$ 1,89</td>
-                    <td style="font-weight: 600;">R$ 1,89</td>
-                </tr>
-                <tr>
-                    <td>56</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Torrada Crocantíssimo Peito Peru 40g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Torradas/Snacks</td>
-                    <td>1 PCT</td>
-                    <td>R$ 2,49</td>
-                    <td style="font-weight: 600;">R$ 2,49</td>
-                </tr>
-                <tr>
-                    <td>57</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Salgadinho Fofura Requeijão 60g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Salgadinhos/Snacks</td>
-                    <td>1 UND</td>
-                    <td>R$ 1,89</td>
-                    <td style="font-weight: 600;">R$ 1,49</td>
-                </tr>
-                <tr>
-                    <td>58</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Biscoito de Polvilho Crac Queijo 80g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>1 UND</td>
-                    <td>R$ 3,99</td>
-                    <td style="font-weight: 600;">R$ 3,99</td>
-                </tr>
-                <tr>
-                    <td>59</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Salgadinho Fofura Requeijão 60g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Salgadinhos/Snacks</td>
-                    <td>1 UND</td>
-                    <td>R$ 1,89</td>
-                    <td style="font-weight: 600;">R$ 1,79</td>
-                </tr>
-                <tr>
-                    <td>60</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Batata Kerus Salsa e Cebola 30g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Salgadinhos/Snacks</td>
-                    <td>2 PCT</td>
-                    <td>R$ 2,99</td>
-                    <td style="font-weight: 600;">R$ 5,98</td>
-                </tr>
-                <tr>
-                    <td>61</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Salgadinho Torcida Bacon 60g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Salgadinhos/Snacks</td>
-                    <td>2 UND</td>
-                    <td>R$ 1,79</td>
-                    <td style="font-weight: 600;">R$ 3,58</td>
-                </tr>
-                <tr>
-                    <td>62</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Cookies Toddy Malhado 57g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>3 UND</td>
-                    <td>R$ 2,29</td>
-                    <td style="font-weight: 600;">R$ 6,87</td>
-                </tr>
-                <tr>
-                    <td>63</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Torrada Crocantíssimo Peito Peru 40g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Torradas/Snacks</td>
-                    <td>1 PCT</td>
-                    <td>R$ 2,49</td>
-                    <td style="font-weight: 600;">R$ 2,49</td>
-                </tr>
-                <tr>
-                    <td>64</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Biscoito Salgado Piraquê Queijo 100g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>1 UND</td>
-                    <td>R$ 3,69</td>
-                    <td style="font-weight: 600;">R$ 3,69</td>
-                </tr>
-                <tr>
-                    <td>65</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Farofa Pronta Bom Gosto 300g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Farofas & Farinhas</td>
-                    <td>2 UND</td>
-                    <td>R$ 6,99</td>
-                    <td style="font-weight: 600;">R$ 13,98</td>
-                </tr>
-                <tr>
-                    <td>66</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Azeitona Verde Fatiada Sachê 300g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Conservas</td>
-                    <td>3 UND</td>
-                    <td>R$ 10,98</td>
-                    <td style="font-weight: 600;">R$ 29,94</td>
-                </tr>
-                <tr>
-                    <td>67</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Biscoito Leite Maltado Piraquê 132g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Biscoitos/Snacks</td>
-                    <td>5 UND</td>
-                    <td>R$ 3,59</td>
-                    <td style="font-weight: 600;">R$ 17,95</td>
-                </tr>
-                <tr>
-                    <td>68</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Sopa Vono Instantânea Mandioca 17g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Sopas & Pratos Prontos</td>
-                    <td>1 UND</td>
-                    <td>R$ 3,49</td>
-                    <td style="font-weight: 600;">R$ 3,49</td>
-                </tr>
-                <tr>
-                    <td>69</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Refresco Dafruta Laranja 1L</strong></td>
-                    <td><span class="badge badge-beb">Bebidas</span></td>
-                    <td>Sucos & Refrescos</td>
-                    <td>1 UND</td>
-                    <td>R$ 2,99</td>
-                    <td style="font-weight: 600;">R$ 2,99</td>
-                </tr>
-                <tr>
-                    <td>70</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Refresco Dafruta Maracujá 1L</strong></td>
-                    <td><span class="badge badge-beb">Bebidas</span></td>
-                    <td>Sucos & Refrescos</td>
-                    <td>1 UND</td>
-                    <td>R$ 2,99</td>
-                    <td style="font-weight: 600;">R$ 2,99</td>
-                </tr>
-                <tr>
-                    <td>71</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Arroz Palmares Longo Fino 1kg</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Grãos & Cereais</td>
-                    <td>3 UND</td>
-                    <td>R$ 3,89</td>
-                    <td style="font-weight: 600;">R$ 11,67</td>
-                </tr>
-                <tr>
-                    <td>72</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Farinha de Rosca a Granel</strong></td>
-                    <td><span class="badge badge-pad">Padaria/Matinais</span></td>
-                    <td>Farinhas</td>
-                    <td>0,348 KG</td>
-                    <td>R$ 14,90</td>
-                    <td style="font-weight: 600;">R$ 5,19</td>
-                </tr>
-                <tr>
-                    <td>73</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Feijão Vermelho Gramfino 500g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Grãos & Cereais</td>
-                    <td>1 UND</td>
-                    <td>R$ 6,99</td>
-                    <td style="font-weight: 600;">R$ 6,99</td>
-                </tr>
-                <tr>
-                    <td>74</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Milho de Pipoca Chinezinho 400g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Grãos & Cereais</td>
-                    <td>2 UND</td>
-                    <td>R$ 3,49</td>
-                    <td style="font-weight: 600;">R$ 6,98</td>
-                </tr>
-                <tr>
-                    <td>75</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Milho Verde Fugini 170g Sachê</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Conservas</td>
-                    <td>3 UN</td>
-                    <td>R$ 3,19</td>
-                    <td style="font-weight: 600;">R$ 9,57</td>
-                </tr>
-                <tr>
-                    <td>76</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Queijo Parmesão Ralado Itambé 50g</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Queijos</td>
-                    <td>4 UN</td>
-                    <td>R$ 6,39</td>
-                    <td style="font-weight: 600;">R$ 25,56</td>
-                </tr>
-                <tr>
-                    <td>77</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Vinagre de Álcool Peixe 750ml</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Molhos & Condimentos</td>
-                    <td>1 UN</td>
-                    <td>R$ 3,49</td>
-                    <td style="font-weight: 600;">R$ 3,49</td>
-                </tr>
-                <tr>
-                    <td>78</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Queijo Parmesão Ralado Italac 40g</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Queijos</td>
-                    <td>1 EV</td>
-                    <td>R$ 4,99</td>
-                    <td style="font-weight: 600;">R$ 4,99</td>
-                </tr>
-                <tr>
-                    <td>79</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Molho de Tomate Pramesa Pizza 300g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Molhos & Condimentos</td>
-                    <td>3 UN</td>
-                    <td>R$ 1,99</td>
-                    <td style="font-weight: 600;">R$ 5,97</td>
-                </tr>
-                <tr>
-                    <td>80</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Creme de Leite Piracanjuba 200g</strong></td>
-                    <td><span class="badge badge-lat">Laticínios</span></td>
-                    <td>Creme de Leite</td>
-                    <td>4 UN</td>
-                    <td>R$ 2,29</td>
-                    <td style="font-weight: 600;">R$ 9,16</td>
-                </tr>
-                <tr>
-                    <td>81</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Molho de Tomate Pramesa Manjericão 300g</strong></td>
-                    <td><span class="badge badge-merc">Mercearia</span></td>
-                    <td>Molhos & Condimentos</td>
-                    <td>1 UN</td>
-                    <td>R$ 1,99</td>
-                    <td style="font-weight: 600;">R$ 1,99</td>
-                </tr>
-                <tr>
-                    <td>82</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Limão Taiti</strong></td>
-                    <td><span class="badge badge-horti">Hortifrúti</span></td>
-                    <td>Frutas</td>
-                    <td>0,67 KG</td>
-                    <td>R$ 8,99</td>
-                    <td style="font-weight: 600;">R$ 6,02</td>
-                </tr>
-                <tr>
-                    <td>83</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Atum Sólido Pescador 140g</strong></td>
-                    <td><span class="badge badge-prot">Proteínas</span></td>
-                    <td>Pescado</td>
-                    <td>3 UN</td>
-                    <td>R$ 9,99</td>
-                    <td style="font-weight: 600;">R$ 29,97</td>
-                </tr>
-                <tr>
-                    <td>84</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Pão Francês Congelado kg</strong></td>
-                    <td><span class="badge badge-pad">Padaria/Matinais</span></td>
-                    <td>Pães</td>
-                    <td>0,26 KG</td>
-                    <td>R$ 17,90</td>
-                    <td style="font-weight: 600;">R$ 4,65</td>
-                </tr>
-                <tr>
-                    <td>85</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Amaciante Urca Brisa 2L</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Lavanderia</td>
-                    <td>1 LI</td>
-                    <td>R$ 6,29</td>
-                    <td style="font-weight: 600;">R$ 6,29</td>
-                </tr>
-                <tr>
-                    <td>86</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Amaciante Baby Soft Concentrado 1.5L</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Lavanderia</td>
-                    <td>1 UN</td>
-                    <td>R$ 14,99</td>
-                    <td style="font-weight: 600;">R$ 14,99</td>
-                </tr>
-                <tr>
-                    <td>87</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Amaciante Baby Soft Concentrado 1.5L</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Lavanderia</td>
-                    <td>1 UN</td>
-                    <td>R$ 14,99</td>
-                    <td style="font-weight: 600;">R$ 14,99</td>
-                </tr>
-                <tr>
-                    <td>88</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Desinfetante Lysoform 1L</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Desinfetantes</td>
-                    <td>1 UN</td>
-                    <td>R$ 17,99</td>
-                    <td style="font-weight: 600;">R$ 17,99</td>
-                </tr>
-                <tr>
-                    <td>89</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Refil Mr Músculo Banheiro 400ml</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Banheiro</td>
-                    <td>1 UN</td>
-                    <td>R$ 15,29</td>
-                    <td style="font-weight: 600;">R$ 15,29</td>
-                </tr>
-                <tr>
-                    <td>90</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Refil Mr Músculo Desengordurante 400ml</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Cozinha / Desengordurante</td>
-                    <td>1 UN</td>
-                    <td>R$ 11,99</td>
-                    <td style="font-weight: 600;">R$ 11,99</td>
-                </tr>
-                <tr>
-                    <td>91</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Limpador Veja Multiuso 500ml L500P450</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Multiuso</td>
-                    <td>1 UN</td>
-                    <td>R$ 3,99</td>
-                    <td style="font-weight: 600;">R$ 3,99</td>
-                </tr>
-                <tr>
-                    <td>92</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Shampoo Palmolive Anticaspa 600ml</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Cabelo</td>
-                    <td>1 UN</td>
-                    <td>R$ 25,99</td>
-                    <td style="font-weight: 600;">R$ 25,99</td>
-                </tr>
-                <tr>
-                    <td>93</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Kit Shampoo + Condicionador Elseve Liso</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Cabelo</td>
-                    <td>1 UN</td>
-                    <td>R$ 29,99</td>
-                    <td style="font-weight: 600;">R$ 29,99</td>
-                </tr>
-                <tr>
-                    <td>94</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Esponja Alklin Antirrisco Dupla Face</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Utensílios de Limpeza</td>
-                    <td>1 UN</td>
-                    <td>R$ 2,39</td>
-                    <td style="font-weight: 600;">R$ 2,39</td>
-                </tr>
-                <tr>
-                    <td>95</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Creme Dental Sensodyne Original 90g</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Higiene Bucal</td>
-                    <td>1 UN</td>
-                    <td>R$ 15,89</td>
-                    <td style="font-weight: 600;">R$ 15,89</td>
-                </tr>
-                <tr>
-                    <td>96</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Hastes Flexíveis Johnson c/ 150</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Higiene Pessoal</td>
-                    <td>1 DP</td>
-                    <td>R$ 16,99</td>
-                    <td style="font-weight: 600;">R$ 16,99</td>
-                </tr>
-                <tr>
-                    <td>97</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Lenço Umedecido Huggies c/ 88</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Lenços Umedecidos</td>
-                    <td>1 UN</td>
-                    <td>R$ 9,99</td>
-                    <td style="font-weight: 600;">R$ 9,99</td>
-                </tr>
-                <tr>
-                    <td>98</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Saco de Lixo Baglixo Pia/Banheiro c/ 100</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Sacos de Lixo</td>
-                    <td>1 UN</td>
-                    <td>R$ 9,99</td>
-                    <td style="font-weight: 600;">R$ 9,99</td>
-                </tr>
-                <tr>
-                    <td>99</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Guardanapo Grand Hotel 33x33cm</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Papéis / Guardanapos</td>
-                    <td>1 UN</td>
-                    <td>R$ 10,99</td>
-                    <td style="font-weight: 600;">R$ 10,99</td>
-                </tr>
-                <tr>
-                    <td>100</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Pano Multiuso Perfex c/ 5</strong></td>
-                    <td><span class="badge badge-limp">Limpeza & Descartáveis</span></td>
-                    <td>Panos de Limpeza</td>
-                    <td>1 PT</td>
-                    <td>R$ 8,99</td>
-                    <td style="font-weight: 600;">R$ 8,99</td>
-                </tr>
-                <tr>
-                    <td>101</td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td><strong>Escova Dental Oral-B L2P1</strong></td>
-                    <td><span class="badge badge-hig">Higiene & Cuidados</span></td>
-                    <td>Higiene Bucal</td>
-                    <td>1 UN</td>
-                    <td>R$ 15,90</td>
-                    <td style="font-weight: 600;">R$ 15,90</td>
-                </tr>
-            </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
     </div>
 
     <script>
-        // Formatter para Tooltips dos Gráficos em PT-BR
+        const rawData = [{"id_item": 1, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00061742 FILE PEIXE TILAPIA 1X800G", "categoria_macro": "Proteínas", "subcategoria": "Pescado", "corte_padronizado": "Filé de Tilápia 800g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 37.9, "desconto": 0.0, "valor_total": 37.9}, {"id_item": 2, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00039122 FILE C.S/COXA AURORA 1X1Kg", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Filé Coxa/Sobrecoxa Frango 1kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 16.9, "desconto": 0.0, "valor_total": 16.9}, {"id_item": 3, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00036102 COXA FGO SEARA IQF 1X1Kg", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Coxa de Frango 1kg", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 11.9, "desconto": 0.0, "valor_total": 23.8}, {"id_item": 4, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00037752 CONTRA FILE FRIBOI", "categoria_macro": "Proteínas", "subcategoria": "Bovino", "corte_padronizado": "Contrafilé Bovino Resfriado", "quantidade": 1.818, "unidade": "KG", "preco_unitario": 45.9, "desconto": 0.0, "valor_total": 83.45}, {"id_item": 5, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00097344 CARNE MOIDA COPACOL 1X400G", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Carne Moída de Frango 400g", "quantidade": 5.0, "unidade": "UND", "preco_unitario": 8.99, "desconto": 2.5, "valor_total": 42.45}, {"id_item": 6, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00064901 RF.BOV.MOIDA GRA FIL 1X500G", "categoria_macro": "Proteínas", "subcategoria": "Bovino", "corte_padronizado": "Carne Moída Bovina 500g", "quantidade": 5.0, "unidade": "UND", "preco_unitario": 12.49, "desconto": 0.0, "valor_total": 62.45}, {"id_item": 7, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00018558 BACON DEF.SEARA", "categoria_macro": "Proteínas", "subcategoria": "Suíno / Embutidos", "corte_padronizado": "Bacon Defumado", "quantidade": 1.15, "unidade": "KG", "preco_unitario": 29.9, "desconto": 0.0, "valor_total": 34.38}, {"id_item": 8, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00086939 BISC.PIRAQUE MAIZENA 1X175G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Maizena Piraquê 175g", "quantidade": 4.0, "unidade": "UND", "preco_unitario": 2.98, "desconto": 0.0, "valor_total": 11.92}, {"id_item": 9, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00012302 BISC.MARILAN COOKIES 1X40G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Cookies Marilan 40g", "quantidade": 3.0, "unidade": "UND", "preco_unitario": 1.49, "desconto": 0.0, "valor_total": 4.47}, {"id_item": 10, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00012280 BISC.MARILAN WAFER 1X70G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Wafer Marilan 70g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.79, "desconto": 0.0, "valor_total": 3.58}, {"id_item": 11, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00069118 BISC.RANCHEIRO 1X78G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Rancheiro 78g", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 1.65, "desconto": 0.0, "valor_total": 3.3}, {"id_item": 12, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00012272 BISC.MARILAN WAFER 1X70G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Wafer Marilan 70g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.79, "desconto": 0.0, "valor_total": 3.58}, {"id_item": 13, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00069117 BISC.RANCHEIRO 1X78G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Rancheiro 78g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.65, "desconto": 0.0, "valor_total": 3.3}, {"id_item": 14, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00017135 BISC.PIRAQUE LEITE M 1X132G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Leite Maltado Piraquê 132g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 3.49}, {"id_item": 15, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00096028 BATATA PALHA CRAC 1X400G", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Batata Palha Crac 400g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 15.9, "desconto": 0.0, "valor_total": 15.9}, {"id_item": 16, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00093754 IOG.DANONE MORANGO 1X1250G", "categoria_macro": "Laticínios", "subcategoria": "Iogurtes", "corte_padronizado": "Iogurte Danone Morango 1.25kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 16.99, "desconto": 6.09, "valor_total": 10.9}, {"id_item": 17, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00007243 PAO FORMA PANCO 1X500G", "categoria_macro": "Padaria/Matinais", "subcategoria": "Pães", "corte_padronizado": "Pão de Forma Panco 500g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 8.99, "desconto": 0.0, "valor_total": 8.99}, {"id_item": 18, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00021777 BISN.PANCO E.SPONGE 1X250G", "categoria_macro": "Padaria/Matinais", "subcategoria": "Pães", "corte_padronizado": "Bisnaguinha Panco Sponge 250g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 15.7, "desconto": 0.0, "valor_total": 15.7}, {"id_item": 19, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00014247 TOALHA PAPEL KITCHEN 1X2UND60", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Papéis", "corte_padronizado": "Toalha de Papel Kitchen c/ 2 un", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 6.49, "desconto": 0.0, "valor_total": 12.98}, {"id_item": 20, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00089771 ESPONJA YPE L4P3 1X3UND", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Utensílios de Limpeza", "corte_padronizado": "Esponja Ypê L4P3", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 5.49, "desconto": 0.0, "valor_total": 5.49}, {"id_item": 21, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00029952 DET.LIQ.MINUANO 1X500ML", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Louça", "corte_padronizado": "Detergente Líquido Minuano 500ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.25, "desconto": 0.0, "valor_total": 2.25}, {"id_item": 22, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00016110 DET.LIQ.MINUANO 1X500ML", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Louça", "corte_padronizado": "Detergente Líquido Minuano 500ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.25, "desconto": 0.0, "valor_total": 2.25}, {"id_item": 23, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00003418 DET.PO TIXAN 1X2,4Kg", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Lavanderia", "corte_padronizado": "Sabão em Pó Tixan 2.4kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 20.9, "desconto": 0.0, "valor_total": 20.9}, {"id_item": 24, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00034454 DET.LIQ.MINUANO 1X500ML", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Louça", "corte_padronizado": "Detergente Líquido Minuano 500ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.25, "desconto": 0.0, "valor_total": 2.25}, {"id_item": 25, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00042009 P.HIG.PERSONAL VIP K 1X20R50M", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Papel Higiênico", "corte_padronizado": "Papel Higiênico Personal Vip 20 Rolos 50m", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 42.98, "desconto": 0.0, "valor_total": 85.96}, {"id_item": 26, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00007443 SAB.LIQ.LUX 1X200ML", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Sabonetes", "corte_padronizado": "Sabonete Líquido Lux 200ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.29, "desconto": 0.0, "valor_total": 9.29}, {"id_item": 27, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00089619 SAB.LIQ.LUX 1X200ML", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Sabonetes", "corte_padronizado": "Sabonete Líquido Lux 200ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.29, "desconto": 0.0, "valor_total": 9.29}, {"id_item": 28, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00062254 SAB.LIQ.LUX REF. 1X200ML", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Sabonetes", "corte_padronizado": "Sabonete Líquido Lux Refil 200ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.29, "desconto": 0.0, "valor_total": 9.29}, {"id_item": 29, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00062251 SAB.LIQ.LUX REF. 1X200ML", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Sabonetes", "corte_padronizado": "Sabonete Líquido Lux Refil 200ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.29, "desconto": 0.0, "valor_total": 9.29}, {"id_item": 30, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00084799 DIFUSOR BOM AR REFIL 1X32ML", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Aromatizantes", "corte_padronizado": "Refil Difusor Bom Ar 32ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 35.9, "desconto": 0.0, "valor_total": 35.9}, {"id_item": 31, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00054580 ESC.DENTAL ORAL-B 1X1UND", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Bucal", "corte_padronizado": "Escova Dental Oral-B 1un", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 14.9, "desconto": 0.0, "valor_total": 14.9}, {"id_item": 32, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00057020 CR.DENT.CLOSE UP 1X70G", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Bucal", "corte_padronizado": "Creme Dental Close Up 70g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.79, "desconto": 0.0, "valor_total": 3.79}, {"id_item": 33, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00070574 TOALHA P.COQUETEL 1X1UND", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Papéis / Guardanapos", "corte_padronizado": "Guardanapo Papel Coquetel", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 7.79, "desconto": 0.0, "valor_total": 7.79}, {"id_item": 34, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00058045 LEITE PIRACANJUBA IN 1X1L", "categoria_macro": "Laticínios", "subcategoria": "Leite", "corte_padronizado": "Leite Integral Piracanjuba 1L", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 5.69, "desconto": 0.0, "valor_total": 11.38}, {"id_item": 35, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00049829 CAFE MELITTA 1X500G", "categoria_macro": "Mercearia", "subcategoria": "Café", "corte_padronizado": "Café Melitta 500g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 26.9, "desconto": 0.0, "valor_total": 53.8}, {"id_item": 36, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00055824 MAC.ADRIA FIDELINHO 1X500G", "categoria_macro": "Mercearia", "subcategoria": "Massas", "corte_padronizado": "Macarrão Adria Fidelinho 500g", "quantidade": 3.0, "unidade": "PCT", "preco_unitario": 4.69, "desconto": 0.0, "valor_total": 14.07}, {"id_item": 37, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00013733 FEIJAO KICALDO PTO 1X1Kg", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Feijão Preto Kicaldo 1kg", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 6.69, "desconto": 0.0, "valor_total": 6.69}, {"id_item": 38, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00015281 FEIJAO BULNEZ PRETO 1X1Kg", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Feijão Preto Bulnez 1kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 5.79, "desconto": 0.0, "valor_total": 5.79}, {"id_item": 39, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00083325 IOGURTE YOPRO 1X160G", "categoria_macro": "Laticínios", "subcategoria": "Iogurtes / Proteicos", "corte_padronizado": "Iogurte YoPRO 160g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.99, "desconto": 0.0, "valor_total": 9.99}, {"id_item": 40, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00021176 ACUC.REF.UNIAO 1X1Kg", "categoria_macro": "Mercearia", "subcategoria": "Açúcar & Adoçantes", "corte_padronizado": "Açúcar Refinado União 1kg", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 6.98}, {"id_item": 41, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00083715 EXTRATO ELEFANTE 1X300G", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Extrato de Tomate Elefante 300g", "quantidade": 1.0, "unidade": "PTE", "preco_unitario": 7.49, "desconto": 0.0, "valor_total": 7.49}, {"id_item": 42, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00083714 EXTRATO ELEFANTE 1X300G", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Extrato de Tomate Elefante 300g", "quantidade": 2.0, "unidade": "PTE", "preco_unitario": 7.49, "desconto": 0.0, "valor_total": 14.98}, {"id_item": 43, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00071724 LEITE PO NINHO INT. 1X380G", "categoria_macro": "Laticínios", "subcategoria": "Leite em Pó", "corte_padronizado": "Leite em Pó Ninho Integral 380g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 15.89, "desconto": 0.0, "valor_total": 15.89}, {"id_item": 44, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FILE PEITO FGO SEARA 1kg BDJ", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Filé de Peito de Frango 1kg", "quantidade": 1.0, "unidade": "BDJ", "preco_unitario": 17.98, "desconto": 0.0, "valor_total": 17.98}, {"id_item": 45, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MEIO ASA FGO SEARA 1kg IQF PCT CONG", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Meio da Asa (Tulipa) Frango 1kg", "quantidade": 3.0, "unidade": "PCT", "preco_unitario": 26.98, "desconto": 0.0, "valor_total": 80.94}, {"id_item": 46, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "HAMB MISTO FRIBOI 672G", "categoria_macro": "Proteínas", "subcategoria": "Bovino / Misto", "corte_padronizado": "Hambúrguer Misto Friboi 672g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 16.99, "desconto": 0.0, "valor_total": 16.99}, {"id_item": 47, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "OVOS CODORNA GJA LOUREIRO PCT 200GR", "categoria_macro": "Proteínas", "subcategoria": "Ovos", "corte_padronizado": "Ovos de Codorna 200g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 8.99, "desconto": 0.0, "valor_total": 8.99}, {"id_item": 48, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MEIO ASA FGO SEARA 1kg IQF PCT CONG", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Meio da Asa (Tulipa) Frango 1kg", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 26.98, "desconto": 0.0, "valor_total": 26.98}, {"id_item": 49, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "IOG LIQ DANONE 1250G GF COCO", "categoria_macro": "Laticínios", "subcategoria": "Iogurtes", "corte_padronizado": "Iogurte Danone Coco 1.25kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 18.99, "desconto": 0.0, "valor_total": 18.99}, {"id_item": 50, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FILE MIGNON SUINO SULITA kg CONG TEMP", "categoria_macro": "Proteínas", "subcategoria": "Suíno", "corte_padronizado": "Filé Mignon Suíno Temperado", "quantidade": 0.978, "unidade": "KG", "preco_unitario": 33.98, "desconto": 0.0, "valor_total": 33.23}, {"id_item": 51, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LING PERNIL SEARA 600G CONG", "categoria_macro": "Proteínas", "subcategoria": "Suíno / Embutidos", "corte_padronizado": "Linguiça de Pernil Seara 600g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 11.89, "desconto": 0.0, "valor_total": 11.89}, {"id_item": 52, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "IOG GREGO BATAVO 90G FLOCOS", "categoria_macro": "Laticínios", "subcategoria": "Iogurtes", "corte_padronizado": "Iogurte Grego Batavo Flocos 90g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 3.49}, {"id_item": 53, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG FOFURA 60G QUEIJO", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Fofura Queijo 60g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.89, "desconto": 0.0, "valor_total": 3.78}, {"id_item": 54, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CROCANTISSIMO PULLMAN 40GR QUEIJO/CEB", "categoria_macro": "Mercearia", "subcategoria": "Torradas/Snacks", "corte_padronizado": "Torrada Crocantíssimo Queijo/Cebola 40g", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 2.49, "desconto": 0.0, "valor_total": 4.98}, {"id_item": 55, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG FOFURA 60G CHURRAS", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Fofura Churrasco 60g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 1.89, "desconto": 0.0, "valor_total": 1.89}, {"id_item": 56, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CROCANTISSIMO PULLMAN 40GR PEITO PERU/REQ", "categoria_macro": "Mercearia", "subcategoria": "Torradas/Snacks", "corte_padronizado": "Torrada Crocantíssimo Peito Peru 40g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 2.49, "desconto": 0.0, "valor_total": 2.49}, {"id_item": 57, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG FOFURA 60G REQUEIJAO", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Fofura Requeijão 60g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 1.89, "desconto": 0.4, "valor_total": 1.49}, {"id_item": 58, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "BISC POLV CRAC 80G QUEIJO", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito de Polvilho Crac Queijo 80g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.99, "desconto": 0.0, "valor_total": 3.99}, {"id_item": 59, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG FOFURA 60G REQUEIJAO", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Fofura Requeijão 60g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 1.89, "desconto": 0.1, "valor_total": 1.79}, {"id_item": 60, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG BATATA KERUS 30G OND SALSA E CEBOLA", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Batata Kerus Salsa e Cebola 30g", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 2.99, "desconto": 0.0, "valor_total": 5.98}, {"id_item": 61, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG TORCIDA 60G SABOR BACON", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Torcida Bacon 60g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.79, "desconto": 0.0, "valor_total": 3.58}, {"id_item": 62, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "BISC COOKIES TODDY 57G MALHADO", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Cookies Toddy Malhado 57g", "quantidade": 3.0, "unidade": "UND", "preco_unitario": 2.29, "desconto": 0.0, "valor_total": 6.87}, {"id_item": 63, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CROCANTISSIMO PULLMAN 40GR PEITO PERU/REQ", "categoria_macro": "Mercearia", "subcategoria": "Torradas/Snacks", "corte_padronizado": "Torrada Crocantíssimo Peito Peru 40g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 2.49, "desconto": 0.0, "valor_total": 2.49}, {"id_item": 64, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "BISC SALG PIRAQUE 100G QUEIJO", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Salgado Piraquê Queijo 100g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.69, "desconto": 0.0, "valor_total": 3.69}, {"id_item": 65, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FAROFA PRONTA BOM GOSTO 300G TRAD", "categoria_macro": "Mercearia", "subcategoria": "Farofas & Farinhas", "corte_padronizado": "Farofa Pronta Bom Gosto 300g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 6.99, "desconto": 0.0, "valor_total": 13.98}, {"id_item": 66, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "AZEITONA VDE TIO PACO 300G FAT SACHE", "categoria_macro": "Mercearia", "subcategoria": "Conservas", "corte_padronizado": "Azeitona Verde Fatiada Sachê 300g", "quantidade": 3.0, "unidade": "UND", "preco_unitario": 10.98, "desconto": 3.0, "valor_total": 29.94}, {"id_item": 67, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "BISC DOCE PIRAQUE 132G LEITE MALTADO", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Leite Maltado Piraquê 132g", "quantidade": 5.0, "unidade": "UND", "preco_unitario": 3.59, "desconto": 0.0, "valor_total": 17.95}, {"id_item": 68, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SOPA VONO 17G INST MAND/CEB/SALSA", "categoria_macro": "Mercearia", "subcategoria": "Sopas & Pratos Prontos", "corte_padronizado": "Sopa Vono Instantânea Mandioca 17g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 3.49}, {"id_item": 69, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "REFR PRONTO DAFRUTA 1L LARAN", "categoria_macro": "Bebidas", "subcategoria": "Sucos & Refrescos", "corte_padronizado": "Refresco Dafruta Laranja 1L", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.99, "desconto": 0.0, "valor_total": 2.99}, {"id_item": 70, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "REFR PRONTO DAFRUTA 1L MARACUJA", "categoria_macro": "Bebidas", "subcategoria": "Sucos & Refrescos", "corte_padronizado": "Refresco Dafruta Maracujá 1L", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.99, "desconto": 0.0, "valor_total": 2.99}, {"id_item": 71, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "ARROZ PALMARES 1kg LF T2", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Arroz Palmares Longo Fino 1kg", "quantidade": 3.0, "unidade": "UND", "preco_unitario": 3.89, "desconto": 0.0, "valor_total": 11.67}, {"id_item": 72, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FARINHA DE ROSCA DA CASA kg", "categoria_macro": "Padaria/Matinais", "subcategoria": "Farinhas", "corte_padronizado": "Farinha de Rosca a Granel", "quantidade": 0.348, "unidade": "KG", "preco_unitario": 14.9, "desconto": 0.0, "valor_total": 5.19}, {"id_item": 73, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FEIJAD VERM GRAMFINO 500G", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Feijão Vermelho Gramfino 500g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 6.99, "desconto": 0.0, "valor_total": 6.99}, {"id_item": 74, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MILHO PIPOCA (CHINEZINHO) 400G", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Milho de Pipoca Chinezinho 400g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 6.98}, {"id_item": 75, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MILHO VDE FUGINI 170G SACHE", "categoria_macro": "Mercearia", "subcategoria": "Conservas", "corte_padronizado": "Milho Verde Fugini 170g Sachê", "quantidade": 3.0, "unidade": "UN", "preco_unitario": 3.19, "desconto": 0.0, "valor_total": 9.57}, {"id_item": 76, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "QUEIJO PARM ITAMBE 50G RAL", "categoria_macro": "Laticínios", "subcategoria": "Queijos", "corte_padronizado": "Queijo Parmesão Ralado Itambé 50g", "quantidade": 4.0, "unidade": "UN", "preco_unitario": 6.39, "desconto": 0.0, "valor_total": 25.56}, {"id_item": 77, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "VINAGRE PEIXE 750ML ALCOOL", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Vinagre de Álcool Peixe 750ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 3.49}, {"id_item": 78, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "QUEIJO PARM ITALAC 40G RAL", "categoria_macro": "Laticínios", "subcategoria": "Queijos", "corte_padronizado": "Queijo Parmesão Ralado Italac 40g", "quantidade": 1.0, "unidade": "EV", "preco_unitario": 4.99, "desconto": 0.0, "valor_total": 4.99}, {"id_item": 79, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MOLHO TOM PRAMESA 300G SACHE PIZZA", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Molho de Tomate Pramesa Pizza 300g", "quantidade": 3.0, "unidade": "UN", "preco_unitario": 1.99, "desconto": 0.0, "valor_total": 5.97}, {"id_item": 80, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CR LEITE PIRACANJUBA 200G TP", "categoria_macro": "Laticínios", "subcategoria": "Creme de Leite", "corte_padronizado": "Creme de Leite Piracanjuba 200g", "quantidade": 4.0, "unidade": "UN", "preco_unitario": 2.29, "desconto": 0.0, "valor_total": 9.16}, {"id_item": 81, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MOLHO TOM PRAMESA 300G MANJERICAO", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Molho de Tomate Pramesa Manjericão 300g", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 1.99, "desconto": 0.0, "valor_total": 1.99}, {"id_item": 82, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FLU LIMAO THAITI kg", "categoria_macro": "Hortifrúti", "subcategoria": "Frutas", "corte_padronizado": "Limão Taiti", "quantidade": 0.67, "unidade": "KG", "preco_unitario": 8.99, "desconto": 0.0, "valor_total": 6.02}, {"id_item": 83, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "ATUM PESCADOR 140G SOL NAT", "categoria_macro": "Proteínas", "subcategoria": "Pescado", "corte_padronizado": "Atum Sólido Pescador 140g", "quantidade": 3.0, "unidade": "UN", "preco_unitario": 9.99, "desconto": 0.0, "valor_total": 29.97}, {"id_item": 84, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "PAO FRANCES KG CONG", "categoria_macro": "Padaria/Matinais", "subcategoria": "Pães", "corte_padronizado": "Pão Francês Congelado kg", "quantidade": 0.26, "unidade": "KG", "preco_unitario": 17.9, "desconto": 0.0, "valor_total": 4.65}, {"id_item": 85, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "AMAC ROUPA DIL URCA 2L BRISA", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Lavanderia", "corte_padronizado": "Amaciante Urca Brisa 2L", "quantidade": 1.0, "unidade": "LI", "preco_unitario": 6.29, "desconto": 0.0, "valor_total": 6.29}, {"id_item": 86, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "AMAC ROUPA CONC BABY SOFT 1,5L GF CARINHO", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Lavanderia", "corte_padronizado": "Amaciante Baby Soft Concentrado 1.5L", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 14.99, "desconto": 0.0, "valor_total": 14.99}, {"id_item": 87, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "AMAC ROUPA CONC BABY SOFT 1,5L GF CARINHO", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Lavanderia", "corte_padronizado": "Amaciante Baby Soft Concentrado 1.5L", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 14.99, "desconto": 0.0, "valor_total": 14.99}, {"id_item": 88, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "DESINF LIQ LYSOFORM 1L SUAVE", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Desinfetantes", "corte_padronizado": "Desinfetante Lysoform 1L", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 17.99, "desconto": 0.0, "valor_total": 17.99}, {"id_item": 89, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LIMPA BANH MR MUSCULO 400ML SACHE 5 EM 1", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Banheiro", "corte_padronizado": "Refil Mr Músculo Banheiro 400ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 15.29, "desconto": 0.0, "valor_total": 15.29}, {"id_item": 90, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LIMP DESENG MR MUSCULO 400ML SACHE, PROMO LIMAO", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Cozinha / Desengordurante", "corte_padronizado": "Refil Mr Músculo Desengordurante 400ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 11.99, "desconto": 0.0, "valor_total": 11.99}, {"id_item": 91, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LIMP MULTIUSO VEJA L500P450ML ORIG", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Multiuso", "corte_padronizado": "Limpador Veja Multiuso 500ml L500P450", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 3.99, "desconto": 0.0, "valor_total": 3.99}, {"id_item": 92, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SH PALMOLIVE 600ML ANTICASPA CLASSIC", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Cabelo", "corte_padronizado": "Shampoo Palmolive Anticaspa 600ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 25.99, "desconto": 0.0, "valor_total": 25.99}, {"id_item": 93, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "KIT SH 375ML+CONDIC 170ML ELSEVE LISO DOS SONHOS", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Cabelo", "corte_padronizado": "Kit Shampoo + Condicionador Elseve Liso", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 29.99, "desconto": 0.0, "valor_total": 29.99}, {"id_item": 94, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "ESPONJA ALKLIN ANTIRRISCO D FACE", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Utensílios de Limpeza", "corte_padronizado": "Esponja Alklin Antirrisco Dupla Face", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 2.39, "desconto": 0.0, "valor_total": 2.39}, {"id_item": 95, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CR DENT SENSODYNE 90G, ORIG", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Bucal", "corte_padronizado": "Creme Dental Sensodyne Original 90g", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 15.89, "desconto": 0.0, "valor_total": 15.89}, {"id_item": 96, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "HASTES FLEX JOHNSON C/150 COTONETE", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Pessoal", "corte_padronizado": "Hastes Flexíveis Johnson c/ 150", "quantidade": 1.0, "unidade": "DP", "preco_unitario": 16.99, "desconto": 0.0, "valor_total": 16.99}, {"id_item": 97, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LENCO UMED HUGGIES C/88 TRIPLA PROT", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Lenços Umedecidos", "corte_padronizado": "Lenço Umedecido Huggies c/ 88", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 9.99, "desconto": 0.0, "valor_total": 9.99}, {"id_item": 98, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SACO LIXO BAGLIXO C/100 PIA/BANH ECON", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Sacos de Lixo", "corte_padronizado": "Saco de Lixo Baglixo Pia/Banheiro c/ 100", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 9.99, "desconto": 0.0, "valor_total": 9.99}, {"id_item": 99, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "GUARD PAP GRAND HOTEL 33X33CM", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Papéis / Guardanapos", "corte_padronizado": "Guardanapo Grand Hotel 33x33cm", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 10.99, "desconto": 0.0, "valor_total": 10.99}, {"id_item": 100, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "PANO PERFEX C/5 60X33CM", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Panos de Limpeza", "corte_padronizado": "Pano Multiuso Perfex c/ 5", "quantidade": 1.0, "unidade": "PT", "preco_unitario": 8.99, "desconto": 0.0, "valor_total": 8.99}, {"id_item": 101, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "ESC DENT ORAL B L2P1 COMPLETE 40 MACIA", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Bucal", "corte_padronizado": "Escova Dental Oral-B L2P1", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 15.9, "desconto": 0.0, "valor_total": 15.9}, {"id_item": 102, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "CHOCOLATE TALENTO AO LEITE AVELA 25G", "categoria_macro": "Mercearia", "subcategoria": "Doces & Chocolates", "corte_padronizado": "Chocolate Talento Avelã 25g", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 5.69, "desconto": 0.0, "valor_total": 5.69}, {"id_item": 103, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "ESM IMPALA TRATAMENTO BASE FORTALECEDORA", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Cuidados Pessoais", "corte_padronizado": "Base Fortalecedora Impala", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 4.99, "desconto": 0.0, "valor_total": 4.99}, {"id_item": 104, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "ESM RISQUE GEL TOP COAT FIXADOR", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Cuidados Pessoais", "corte_padronizado": "Esmalte Risqué Top Coat Fixador", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 15.49, "desconto": 0.0, "valor_total": 15.49}, {"id_item": 105, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "FUROATO DE MOMETASONA 50MCG SPRAY NASAL 120DS", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos", "corte_padronizado": "Furoato de Mometasona 50mcg Spray", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 62.71, "desconto": 22.71, "valor_total": 40.0}, {"id_item": 106, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "NAZZO HYALUJET 100ML", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos & Nasais", "corte_padronizado": "Nazzo Hyalujet Spray 100ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 67.49, "desconto": 7.49, "valor_total": 60.0}, {"id_item": 107, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "OMEGA 3 1000MG 120CP", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Suplementos & Vitaminas", "corte_padronizado": "Ômega 3 1000mg 120 Cápsulas", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 69.9, "desconto": 0.0, "valor_total": 69.9}, {"id_item": 108, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "SIMETICONA 125MG 10CAP GEL(MED)", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos", "corte_padronizado": "Simeticona 125mg 10 Cápsulas Gel", "quantidade": 2.0, "unidade": "UN", "preco_unitario": 6.69, "desconto": 0.0, "valor_total": 13.38}, {"id_item": 109, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "SIMETICONA 125MG 10CAP GEL(MED)", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos", "corte_padronizado": "Simeticona 125mg 10 Cápsulas Gel", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 6.69, "desconto": 0.0, "valor_total": 6.69}, {"id_item": 110, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "UTROGESTAN 200MG 14CP", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos", "corte_padronizado": "Utrogestan 200mg 14 Cápsulas", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 87.51, "desconto": 16.87, "valor_total": 70.64}];
+        let selectedCategory = 'TODAS';
+        let catChartInstance = null;
+        let subChartInstance = null;
+
         const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        const numFormatter = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
 
-        // Cat Chart
-        new Chart(document.getElementById('catChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ["Prote\u00ednas", "Mercearia", "Higiene & Cuidados", "Limpeza & Descart\u00e1veis", "Latic\u00ednios", "Padaria/Matinais", "Hortifr\u00fati", "Bebidas"],
-                datasets: [{
-                    data: [528.3, 314.38, 256.56, 207.7, 110.35, 34.53, 6.02, 5.98],
-                    backgroundColor: ['#f87171', '#fbbf24', '#34d399', '#c084fc', '#38bdf8', '#fb923c', '#4ade80', '#f472b6'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 12, padding: 12 } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': ' + brlFormatter.format(context.raw);
-                            }
-                        }
-                    }
+        const categoryColors = {
+            "Proteínas": "#f87171",
+            "Mercearia": "#fbbf24",
+            "Higiene & Cuidados": "#34d399",
+            "Saúde & Farmácia": "#2dd4bf",
+            "Limpeza & Descartáveis": "#c084fc",
+            "Laticínios": "#38bdf8",
+            "Padaria/Matinais": "#fb923c",
+            "Hortifrúti": "#4ade80",
+            "Bebidas": "#f472b6"
+        };
+
+        const badgeClasses = {
+            "Proteínas": "badge-prot",
+            "Mercearia": "badge-merc",
+            "Laticínios": "badge-lat",
+            "Limpeza & Descartáveis": "badge-limp",
+            "Higiene & Cuidados": "badge-hig",
+            "Saúde & Farmácia": "badge-farma",
+            "Padaria/Matinais": "badge-pad",
+            "Bebidas": "badge-beb",
+            "Hortifrúti": "badge-horti"
+        };
+
+        function init() {
+            setupCategoryControls();
+            renderCategoryPie();
+            updateDashboard();
+        }
+
+        function setupCategoryControls() {
+            const categories = Array.from(new Set(rawData.map(d => d.categoria_macro)));
+            const select = document.getElementById('catSelect');
+            const chips = document.getElementById('chipsContainer');
+            
+            chips.innerHTML = '<div class="filter-chip active" onclick="selectCategory(\'TODAS\')">Todas</div>';
+            
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+
+                const chip = document.createElement('div');
+                chip.className = 'filter-chip';
+                chip.dataset.cat = cat;
+                chip.textContent = cat;
+                chip.onclick = () => selectCategory(cat);
+                chips.appendChild(chip);
+            });
+        }
+
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            document.getElementById('catSelect').value = cat;
+            
+            document.querySelectorAll('.filter-chip').forEach(el => {
+                if ((cat === 'TODAS' && el.textContent === 'Todas') || el.dataset.cat === cat) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
                 }
-            }
-        });
+            });
 
-        // Prot Chart
-        new Chart(document.getElementById('protChart'), {
-            type: 'bar',
-            data: {
-                labels: ["Ave/Frango", "Bovino", "Pescado", "Su\u00edno / Embutidos", "Su\u00edno", "Bovino / Misto", "Ovos"],
-                datasets: [{
-                    label: 'Total em Proteínas',
-                    data: [209.05, 145.9, 67.87, 46.27, 33.23, 16.99, 8.99],
-                    backgroundColor: ['#f87171', '#fb923c', '#38bdf8', '#a78bfa', '#34d399', '#fbbf24'],
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: { grid: { color: '#243049' }, ticks: { color: '#94a3b8' } },
-                    y: { 
-                        grid: { color: '#243049' }, 
-                        ticks: { 
-                            color: '#94a3b8',
-                            callback: function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); }
-                        } 
-                    }
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const totalGeral = rawData.reduce((acc, it) => acc + it.valor_total, 0);
+            const filteredData = selectedCategory === 'TODAS' 
+                ? rawData 
+                : rawData.filter(d => d.categoria_macro === selectedCategory);
+
+            const gastoFiltrado = filteredData.reduce((acc, it) => acc + it.valor_total, 0);
+            const qtdCompras = new Set(filteredData.map(d => d.id_compra)).size || 1;
+            const ticketMedio = gastoFiltrado / qtdCompras;
+            const share = (gastoFiltrado / totalGeral) * 100;
+            const volumeTotal = filteredData.reduce((acc, it) => acc + it.quantidade, 0);
+
+            document.getElementById('kpiGasto').textContent = brlFormatter.format(gastoFiltrado);
+            document.getElementById('kpiTicket').textContent = brlFormatter.format(ticketMedio);
+            document.getElementById('kpiShare').textContent = share.toFixed(1).replace('.', ',') + '%';
+            document.getElementById('kpiItens').textContent = filteredData.length + ' registros';
+            document.getElementById('kpiVolumeSub').textContent = numFormatter.format(volumeTotal) + ' unidades/kg';
+
+            renderSubcategoryBar(filteredData);
+            renderTable(filteredData);
+        }
+
+        function renderCategoryPie() {
+            const catMap = {};
+            rawData.forEach(d => {
+                catMap[d.categoria_macro] = (catMap[d.categoria_macro] || 0) + d.valor_total;
+            });
+
+            const labels = Object.keys(catMap).sort((a, b) => catMap[b] - catMap[a]);
+            const values = labels.map(l => catMap[l]);
+            const bgColors = labels.map(l => categoryColors[l] || '#94a3b8');
+
+            const ctx = document.getElementById('catChart').getContext('2d');
+            catChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: bgColors,
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
                 },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return 'Total: ' + brlFormatter.format(context.raw);
+                options: {
+                    responsive: true,
+                    onClick: (evt, activeEls) => {
+                        if (activeEls && activeEls.length > 0) {
+                            const idx = activeEls[0].index;
+                            const clickedCat = labels[idx];
+                            selectCategory(selectedCategory === clickedCat ? 'TODAS' : clickedCat);
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 12, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + brlFormatter.format(context.raw);
+                                }
                             }
                         }
                     }
                 }
+            });
+        }
+
+        function renderSubcategoryBar(data) {
+            const subMap = {};
+            const isAll = selectedCategory === 'TODAS';
+            const groupKey = isAll ? 'categoria_macro' : 'subcategoria';
+            
+            data.forEach(d => {
+                const key = d[groupKey];
+                subMap[key] = (subMap[key] || 0) + d.valor_total;
+            });
+
+            const labels = Object.keys(subMap).sort((a, b) => subMap[b] - subMap[a]);
+            const values = labels.map(l => subMap[l]);
+            const bgColors = labels.map(l => isAll ? (categoryColors[l] || '#38bdf8') : (categoryColors[selectedCategory] || '#38bdf8'));
+
+            document.getElementById('barChartTitle').textContent = isAll 
+                ? 'Gastos por Categoria Macro (R$)' 
+                : 'Subcategorias de ' + selectedCategory + ' (R$)';
+
+            if (subChartInstance) {
+                subChartInstance.destroy();
             }
-        });
+
+            const ctx = document.getElementById('subChart').getContext('2d');
+            subChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Gasto (R$)',
+                        data: values,
+                        backgroundColor: bgColors,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { grid: { color: '#243049' }, ticks: { color: '#94a3b8' } },
+                        y: { 
+                            grid: { color: '#243049' }, 
+                            ticks: { 
+                                color: '#94a3b8',
+                                callback: value => 'R$ ' + value.toLocaleString('pt-BR')
+                            } 
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => 'Total: ' + brlFormatter.format(context.raw)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            document.getElementById('tableTitle').textContent = selectedCategory === 'TODAS'
+                ? '🛒 Todos os Itens Registrados'
+                : '🛒 Itens Filtrados: ' + selectedCategory;
+                
+            document.getElementById('tableCount').textContent = '(' + data.length + ' de ' + rawData.length + ' itens)';
+
+            data.forEach(r => {
+                const tr = document.createElement('tr');
+                const bClass = badgeClasses[r.categoria_macro] || 'badge-merc';
+                tr.innerHTML = `
+                    <td>${r.id_item}</td>
+                    <td>${r.data}</td>
+                    <td>${r.estabelecimento}</td>
+                    <td><strong>${r.corte_padronizado}</strong></td>
+                    <td><span class="badge ${bClass}">${r.categoria_macro}</span></td>
+                    <td>${r.subcategoria}</td>
+                    <td>${numFormatter.format(r.quantidade)} ${r.unidade}</td>
+                    <td>${brlFormatter.format(r.preco_unitario)}</td>
+                    <td style="font-weight: 600;">${brlFormatter.format(r.valor_total)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
