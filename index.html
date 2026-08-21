@@ -1,450 +1,623 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Consumo Doméstico & Despesas</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg: #0b0f19;
-            --card-bg: #151d30;
-            --card-sub: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --accent-green: #34d399;
-            --accent-purple: #a78bfa;
-            --accent-orange: #fb923c;
-            --accent-red: #f87171;
-            --accent-teal: #2dd4bf;
-            --accent-amber: #f59e0b;
-            --border: #243049;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); padding: 24px; }
-        .header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 18px; }
-        .header h1 { font-size: 24px; font-weight: 700; color: #fff; }
-        .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
-        
-        .filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border); }
-        .filter-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-        .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; background: #1e293b; border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; }
-        .filter-chip:hover, .filter-chip.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
-        .btn-reset { margin-left: auto; font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; text-decoration: underline; }
-        
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
-        .kpi-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
-        .kpi-val { font-size: 24px; font-weight: 700; margin-top: 6px; }
-        .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Financeiro Pessoal</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --purple: #8b5cf6;
+      --border: #334155;
+    }
 
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px; }
-        .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; }
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .chart-card h3 { font-size: 15px; font-weight: 600; color: #e2e8f0; }
-        .chart-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 24px; }
+    .container { max-width: 1280px; margin: 0 auto; }
 
-        .section-title { font-size: 18px; font-weight: 600; margin: 28px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
-        
-        .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto; max-height: 480px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
-        th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 10px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; position: sticky; top: 0; background: var(--card-bg); }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #cbd5e1; }
-        tr:hover { background-color: rgba(255,255,255,0.02); }
-        
-        .badge { display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 11px; font-weight: 600; }
-        .badge-prot { background: rgba(248, 113, 113, 0.18); color: #f87171; }
-        .badge-merc { background: rgba(251, 191, 36, 0.18); color: #fbbf24; }
-        .badge-lat { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
-        .badge-limp { background: rgba(168, 85, 247, 0.18); color: #c084fc; }
-        .badge-hig { background: rgba(52, 211, 153, 0.18); color: #34d399; }
-        .badge-pad { background: rgba(251, 146, 60, 0.18); color: #fb923c; }
-        .badge-beb { background: rgba(236, 72, 153, 0.18); color: #f472b6; }
-        .badge-horti { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
-        .badge-farma { background: rgba(45, 212, 191, 0.18); color: #2dd4bf; }
-        .badge-rua { background: rgba(245, 158, 11, 0.18); color: #f59e0b; }
-    </style>
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    h1 { font-size: 24px; font-weight: 700; }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+    .filters { display: flex; gap: 12px; flex-wrap: wrap; }
+    select { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 14px; outline: none; }
+    select:focus { border-color: var(--primary); }
+
+    .alert-box { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #93c5fd; display: none; align-items: center; gap: 8px; }
+
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .kpi-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .kpi-value { font-size: 24px; font-weight: 700; margin-top: 8px; }
+
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; min-height: 350px; display: flex; flex-direction: column; }
+    .chart-card.full-width { grid-column: 1 / -1; min-height: 380px; }
+    .chart-card h3 { font-size: 15px; margin-bottom: 16px; color: var(--text); }
+    .chart-wrapper { flex: 1; position: relative; }
+
+    .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; overflow: hidden; margin-top: 24px; }
+    .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .search-input { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 14px; width: 250px; outline: none; }
+    .table-container { overflow-x: auto; max-height: 420px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { background: #111827; padding: 12px; color: var(--text-muted); position: sticky; top: 0; }
+    td { padding: 12px; border-bottom: 1px solid var(--border); }
+    tr:hover { background: #273549; }
+    .badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .badge-parcelado { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-vista { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-futuro { background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .empty-msg { text-align: center; padding: 24px; color: var(--text-muted); }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1>Dashboard de Consumo Doméstico & Despesas</h1>
-            <p>Mercados, Farmácia e Alimentação Fora • Interativo</p>
-        </div>
-        <div style="text-align: right;">
-            <span style="background: #0284c7; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">5 Registros Consolidados</span>
-            <div style="color: var(--text-muted); font-size: 12px; margin-top: 6px;">Última Atualização: 20/08/2026</div>
-        </div>
+
+<div class="container">
+  <header>
+    <div>
+      <h1>Painel Financeiro Consolidado</h1>
+      <div class="subtitle">Acompanhamento executivo de faturas e compromissos futuros</div>
     </div>
-
-    <div class="filter-bar">
-        <span class="filter-label">Filtro de Categoria:</span>
-        <div id="chipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-        <button class="btn-reset" onclick="selectCategory('TODAS')">Limpar Filtro</button>
+    <div class="filters">
+      <select id="filterMonth" onchange="renderDashboard()">
+        <option value="ALL">Todo o Histórico (Realizado)</option>
+        <optgroup label="Faturas Fechadas">
+          <option value="07/2026">Julho/2026</option>
+          <option value="08/2026">Agosto/2026</option>
+        </optgroup>
+        <optgroup label="Projeções Futuras (Parcelas)">
+          <option value="09/2026">Setembro/2026 (Projeção)</option>
+          <option value="10/2026">Outubro/2026 (Projeção)</option>
+          <option value="11/2026">Novembro/2026 (Projeção)</option>
+          <option value="12/2026">Dezembro/2026 (Projeção)</option>
+          <option value="01/2027">Janeiro/2027 (Projeção)</option>
+          <option value="02/2027">Fevereiro/2027 (Projeção)</option>
+          <option value="03/2027">Março/2027 (Projeção)</option>
+          <option value="04/2027">Abril/2027 (Projeção)</option>
+          <option value="05/2027">Maio/2027 (Projeção)</option>
+          <option value="06/2027">Junho/2027 (Projeção)</option>
+          <option value="07/2027">Julho/2027 (Projeção)</option>
+          <option value="08/2027">Agosto/2027 (Projeção)</option>
+        </optgroup>
+      </select>
+      <select id="filterCard" onchange="renderDashboard()">
+        <option value="ALL">Todos os Cartões</option>
+      </select>
+      <select id="filterCategory" onchange="renderDashboard()">
+        <option value="ALL">Todas as Categorias</option>
+      </select>
+      <select id="filterInstallment" onchange="renderDashboard()">
+        <option value="ALL">Tipo de Compra: Todas</option>
+        <option value="PARCELADO">Apenas Parceladas</option>
+        <option value="VISTA">Apenas À Vista</option>
+      </select>
     </div>
+  </header>
 
-    <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-title" id="kpiTitleGasto">Gasto Total (Filtro)</div>
-            <div class="kpi-val" style="color: var(--accent);" id="kpiGasto">R$ 0,00</div>
-            <div class="kpi-sub" id="kpiGastoSub">Consolidado</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-title">Ticket Médio</div>
-            <div class="kpi-val" style="color: var(--accent-green);" id="kpiTicket">R$ 0,00</div>
-            <div class="kpi-sub">Por registro/ida</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-title">% Sobre o Total Geral</div>
-            <div class="kpi-val" style="color: var(--accent-orange);" id="kpiShare">100%</div>
-            <div class="kpi-sub">Participação orçamentária</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-title">SKUs Filtrados</div>
-            <div class="kpi-val" style="color: var(--accent-purple);" id="kpiItens">0 itens</div>
-            <div class="kpi-sub" id="kpiVolumeSub">Volume total</div>
-        </div>
+  <div id="futureAlert" class="alert-box">
+    ℹ️ <strong>Mês Futuro Selecionado:</strong> Exibindo compromissos fixos contratados. <em>Compras à vista ainda não estão consolidadas na fatura deste período.</em>
+  </div>
+
+  <section class="kpis">
+    <div class="kpi-card">
+      <div class="kpi-title" id="kpiTotalTitle">Total Geral</div>
+      <div class="kpi-value" id="kpiTotal" style="color: #60a5fa;">R$ 0,00</div>
     </div>
-
-    <div class="charts-grid">
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3>Distribuição por Categoria Macro (R$)</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">(Clique na fatia para filtrar)</span>
-            </div>
-            <canvas id="catChart" height="230"></canvas>
-        </div>
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3 id="barChartTitle">Subcategorias / Itens (R$)</h3>
-                <select class="chart-select" id="catSelect" onchange="selectCategory(this.value)">
-                    <option value="TODAS">Todas as Categorias</option>
-                </select>
-            </div>
-            <canvas id="subChart" height="230"></canvas>
-        </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Comprometido Parcelado</div>
+      <div class="kpi-value" id="kpiParcelado" style="color: #fbbf24;">R$ 0,00</div>
     </div>
-
-    <div class="section-title">🏢 Histórico por Estabelecimento / Despesa</div>
-    <div class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Data</th>
-                    <th>Estabelecimento</th>
-                    <th>Qtd Linhas</th>
-                    <th>Total Bruto</th>
-                    <th>Desconto</th>
-                    <th>Total Líquido</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>#1</strong></td>
-                    <td>17/08/2026</td>
-                    <td>Atacadão S.A.</td>
-                    <td>43 SKUs</td>
-                    <td>R$ 773,73</td>
-                    <td>-R$ 8,59</td>
-                    <td><strong>R$ 765,14</strong></td>
-                </tr>
-                <tr>
-                    <td><strong>#2</strong></td>
-                    <td>17/08/2026</td>
-                    <td>Dom Atacadista</td>
-                    <td>58 SKUs</td>
-                    <td>R$ 702,15</td>
-                    <td>-R$ 3,50</td>
-                    <td><strong>R$ 698,65</strong></td>
-                </tr>
-                <tr>
-                    <td><strong>#3</strong></td>
-                    <td>19/08/2026</td>
-                    <td>Drogaria Campos Eliseos</td>
-                    <td>9 SKUs</td>
-                    <td>R$ 333,85</td>
-                    <td>-R$ 47,07</td>
-                    <td><strong>R$ 286,78</strong></td>
-                </tr>
-                <tr>
-                    <td><strong>#4</strong></td>
-                    <td>20/08/2026</td>
-                    <td>Boteco do Manolo</td>
-                    <td>1 SKU</td>
-                    <td>R$ 92,60</td>
-                    <td>R$ 0,00</td>
-                    <td><strong>R$ 92,60</strong></td>
-                </tr>
-                <tr>
-                    <td><strong>#5</strong></td>
-                    <td>20/08/2026</td>
-                    <td>Picanha ao Alho (Restaurante do Jorginho)</td>
-                    <td>1 SKU</td>
-                    <td>R$ 25,00</td>
-                    <td>R$ 0,00</td>
-                    <td><strong>R$ 25,00</strong></td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="kpi-card">
+      <div class="kpi-title">Compras à Vista</div>
+      <div class="kpi-value" id="kpiVista" style="color: #34d399;">R$ 0,00</div>
     </div>
-
-    <div class="section-title">
-        <span id="tableTitle">🛒 Itens Registrados</span>
-        <span style="font-size: 13px; color: var(--text-muted);" id="tableCount"></span>
+    <div class="kpi-card">
+      <div class="kpi-title">Lançamentos no Período</div>
+      <div class="kpi-value" id="kpiCount" style="color: #f472b6;">0</div>
     </div>
-    <div class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Data</th>
-                    <th>Estabelecimento</th>
-                    <th>Produto Padronizado</th>
-                    <th>Categoria</th>
-                    <th>Subcategoria</th>
-                    <th>Qtd</th>
-                    <th>Preço Un.</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+  </section>
+
+  <section class="charts-grid">
+    <div class="chart-card full-width">
+      <h3>📈 Linha do Tempo: Faturas Fechadas e Projeção de Parcelas Futuras</h3>
+      <div class="chart-wrapper">
+        <canvas id="projectionChart"></canvas>
+      </div>
     </div>
+    <div class="chart-card">
+      <h3>Gastos por Categoria</h3>
+      <div class="chart-wrapper">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Gastos por Cartão</h3>
+      <div class="chart-wrapper">
+        <canvas id="cardChart"></canvas>
+      </div>
+    </div>
+  </section>
 
-    <script>
-        const rawData = [{"id_item": 1, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00061742 FILE PEIXE TILAPIA 1X800G", "categoria_macro": "Proteínas", "subcategoria": "Pescado", "corte_padronizado": "Filé de Tilápia 800g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 37.9, "desconto": 0.0, "valor_total": 37.9}, {"id_item": 2, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00039122 FILE C.S/COXA AURORA 1X1Kg", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Filé Coxa/Sobrecoxa Frango 1kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 16.9, "desconto": 0.0, "valor_total": 16.9}, {"id_item": 3, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00036102 COXA FGO SEARA IQF 1X1Kg", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Coxa de Frango 1kg", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 11.9, "desconto": 0.0, "valor_total": 23.8}, {"id_item": 4, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00037752 CONTRA FILE FRIBOI", "categoria_macro": "Proteínas", "subcategoria": "Bovino", "corte_padronizado": "Contrafilé Bovino Resfriado", "quantidade": 1.818, "unidade": "KG", "preco_unitario": 45.9, "desconto": 0.0, "valor_total": 83.45}, {"id_item": 5, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00097344 CARNE MOIDA COPACOL 1X400G", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Carne Moída de Frango 400g", "quantidade": 5.0, "unidade": "UND", "preco_unitario": 8.99, "desconto": 2.5, "valor_total": 42.45}, {"id_item": 6, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00064901 RF.BOV.MOIDA GRA FIL 1X500G", "categoria_macro": "Proteínas", "subcategoria": "Bovino", "corte_padronizado": "Carne Moída Bovina 500g", "quantidade": 5.0, "unidade": "UND", "preco_unitario": 12.49, "desconto": 0.0, "valor_total": 62.45}, {"id_item": 7, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00018558 BACON DEF.SEARA", "categoria_macro": "Proteínas", "subcategoria": "Suíno / Embutidos", "corte_padronizado": "Bacon Defumado", "quantidade": 1.15, "unidade": "KG", "preco_unitario": 29.9, "desconto": 0.0, "valor_total": 34.38}, {"id_item": 8, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00086939 BISC.PIRAQUE MAIZENA 1X175G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Maizena Piraquê 175g", "quantidade": 4.0, "unidade": "UND", "preco_unitario": 2.98, "desconto": 0.0, "valor_total": 11.92}, {"id_item": 9, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00012302 BISC.MARILAN COOKIES 1X40G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Cookies Marilan 40g", "quantidade": 3.0, "unidade": "UND", "preco_unitario": 1.49, "desconto": 0.0, "valor_total": 4.47}, {"id_item": 10, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00012280 BISC.MARILAN WAFER 1X70G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Wafer Marilan 70g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.79, "desconto": 0.0, "valor_total": 3.58}, {"id_item": 11, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00069118 BISC.RANCHEIRO 1X78G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Rancheiro 78g", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 1.65, "desconto": 0.0, "valor_total": 3.3}, {"id_item": 12, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00012272 BISC.MARILAN WAFER 1X70G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Wafer Marilan 70g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.79, "desconto": 0.0, "valor_total": 3.58}, {"id_item": 13, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00069117 BISC.RANCHEIRO 1X78G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Rancheiro 78g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.65, "desconto": 0.0, "valor_total": 3.3}, {"id_item": 14, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00017135 BISC.PIRAQUE LEITE M 1X132G", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Leite Maltado Piraquê 132g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 3.49}, {"id_item": 15, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00096028 BATATA PALHA CRAC 1X400G", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Batata Palha Crac 400g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 15.9, "desconto": 0.0, "valor_total": 15.9}, {"id_item": 16, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00093754 IOG.DANONE MORANGO 1X1250G", "categoria_macro": "Laticínios", "subcategoria": "Iogurtes", "corte_padronizado": "Iogurte Danone Morango 1.25kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 16.99, "desconto": 6.09, "valor_total": 10.9}, {"id_item": 17, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00007243 PAO FORMA PANCO 1X500G", "categoria_macro": "Padaria/Matinais", "subcategoria": "Pães", "corte_padronizado": "Pão de Forma Panco 500g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 8.99, "desconto": 0.0, "valor_total": 8.99}, {"id_item": 18, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00021777 BISN.PANCO E.SPONGE 1X250G", "categoria_macro": "Padaria/Matinais", "subcategoria": "Pães", "corte_padronizado": "Bisnaguinha Panco Sponge 250g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 15.7, "desconto": 0.0, "valor_total": 15.7}, {"id_item": 19, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00014247 TOALHA PAPEL KITCHEN 1X2UND60", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Papéis", "corte_padronizado": "Toalha de Papel Kitchen c/ 2 un", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 6.49, "desconto": 0.0, "valor_total": 12.98}, {"id_item": 20, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00089771 ESPONJA YPE L4P3 1X3UND", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Utensílios de Limpeza", "corte_padronizado": "Esponja Ypê L4P3", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 5.49, "desconto": 0.0, "valor_total": 5.49}, {"id_item": 21, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00029952 DET.LIQ.MINUANO 1X500ML", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Louça", "corte_padronizado": "Detergente Líquido Minuano 500ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.25, "desconto": 0.0, "valor_total": 2.25}, {"id_item": 22, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00016110 DET.LIQ.MINUANO 1X500ML", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Louça", "corte_padronizado": "Detergente Líquido Minuano 500ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.25, "desconto": 0.0, "valor_total": 2.25}, {"id_item": 23, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00003418 DET.PO TIXAN 1X2,4Kg", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Lavanderia", "corte_padronizado": "Sabão em Pó Tixan 2.4kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 20.9, "desconto": 0.0, "valor_total": 20.9}, {"id_item": 24, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00034454 DET.LIQ.MINUANO 1X500ML", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Louça", "corte_padronizado": "Detergente Líquido Minuano 500ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.25, "desconto": 0.0, "valor_total": 2.25}, {"id_item": 25, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00042009 P.HIG.PERSONAL VIP K 1X20R50M", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Papel Higiênico", "corte_padronizado": "Papel Higiênico Personal Vip 20 Rolos 50m", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 42.98, "desconto": 0.0, "valor_total": 85.96}, {"id_item": 26, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00007443 SAB.LIQ.LUX 1X200ML", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Sabonetes", "corte_padronizado": "Sabonete Líquido Lux 200ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.29, "desconto": 0.0, "valor_total": 9.29}, {"id_item": 27, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00089619 SAB.LIQ.LUX 1X200ML", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Sabonetes", "corte_padronizado": "Sabonete Líquido Lux 200ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.29, "desconto": 0.0, "valor_total": 9.29}, {"id_item": 28, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00062254 SAB.LIQ.LUX REF. 1X200ML", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Sabonetes", "corte_padronizado": "Sabonete Líquido Lux Refil 200ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.29, "desconto": 0.0, "valor_total": 9.29}, {"id_item": 29, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00062251 SAB.LIQ.LUX REF. 1X200ML", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Sabonetes", "corte_padronizado": "Sabonete Líquido Lux Refil 200ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.29, "desconto": 0.0, "valor_total": 9.29}, {"id_item": 30, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00084799 DIFUSOR BOM AR REFIL 1X32ML", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Aromatizantes", "corte_padronizado": "Refil Difusor Bom Ar 32ml", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 35.9, "desconto": 0.0, "valor_total": 35.9}, {"id_item": 31, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00054580 ESC.DENTAL ORAL-B 1X1UND", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Bucal", "corte_padronizado": "Escova Dental Oral-B 1un", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 14.9, "desconto": 0.0, "valor_total": 14.9}, {"id_item": 32, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00057020 CR.DENT.CLOSE UP 1X70G", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Bucal", "corte_padronizado": "Creme Dental Close Up 70g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.79, "desconto": 0.0, "valor_total": 3.79}, {"id_item": 33, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00070574 TOALHA P.COQUETEL 1X1UND", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Papéis / Guardanapos", "corte_padronizado": "Guardanapo Papel Coquetel", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 7.79, "desconto": 0.0, "valor_total": 7.79}, {"id_item": 34, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00058045 LEITE PIRACANJUBA IN 1X1L", "categoria_macro": "Laticínios", "subcategoria": "Leite", "corte_padronizado": "Leite Integral Piracanjuba 1L", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 5.69, "desconto": 0.0, "valor_total": 11.38}, {"id_item": 35, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00049829 CAFE MELITTA 1X500G", "categoria_macro": "Mercearia", "subcategoria": "Café", "corte_padronizado": "Café Melitta 500g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 26.9, "desconto": 0.0, "valor_total": 53.8}, {"id_item": 36, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00055824 MAC.ADRIA FIDELINHO 1X500G", "categoria_macro": "Mercearia", "subcategoria": "Massas", "corte_padronizado": "Macarrão Adria Fidelinho 500g", "quantidade": 3.0, "unidade": "PCT", "preco_unitario": 4.69, "desconto": 0.0, "valor_total": 14.07}, {"id_item": 37, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00013733 FEIJAO KICALDO PTO 1X1Kg", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Feijão Preto Kicaldo 1kg", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 6.69, "desconto": 0.0, "valor_total": 6.69}, {"id_item": 38, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00015281 FEIJAO BULNEZ PRETO 1X1Kg", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Feijão Preto Bulnez 1kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 5.79, "desconto": 0.0, "valor_total": 5.79}, {"id_item": 39, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00083325 IOGURTE YOPRO 1X160G", "categoria_macro": "Laticínios", "subcategoria": "Iogurtes / Proteicos", "corte_padronizado": "Iogurte YoPRO 160g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 9.99, "desconto": 0.0, "valor_total": 9.99}, {"id_item": 40, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00021176 ACUC.REF.UNIAO 1X1Kg", "categoria_macro": "Mercearia", "subcategoria": "Açúcar & Adoçantes", "corte_padronizado": "Açúcar Refinado União 1kg", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 6.98}, {"id_item": 41, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00083715 EXTRATO ELEFANTE 1X300G", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Extrato de Tomate Elefante 300g", "quantidade": 1.0, "unidade": "PTE", "preco_unitario": 7.49, "desconto": 0.0, "valor_total": 7.49}, {"id_item": 42, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00083714 EXTRATO ELEFANTE 1X300G", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Extrato de Tomate Elefante 300g", "quantidade": 2.0, "unidade": "PTE", "preco_unitario": 7.49, "desconto": 0.0, "valor_total": 14.98}, {"id_item": 43, "id_compra": 1, "data": "17/08/2026", "estabelecimento": "Atacadão S.A.", "descricao_original": "00071724 LEITE PO NINHO INT. 1X380G", "categoria_macro": "Laticínios", "subcategoria": "Leite em Pó", "corte_padronizado": "Leite em Pó Ninho Integral 380g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 15.89, "desconto": 0.0, "valor_total": 15.89}, {"id_item": 44, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FILE PEITO FGO SEARA 1kg BDJ", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Filé de Peito de Frango 1kg", "quantidade": 1.0, "unidade": "BDJ", "preco_unitario": 17.98, "desconto": 0.0, "valor_total": 17.98}, {"id_item": 45, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MEIO ASA FGO SEARA 1kg IQF PCT CONG", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Meio da Asa (Tulipa) Frango 1kg", "quantidade": 3.0, "unidade": "PCT", "preco_unitario": 26.98, "desconto": 0.0, "valor_total": 80.94}, {"id_item": 46, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "HAMB MISTO FRIBOI 672G", "categoria_macro": "Proteínas", "subcategoria": "Bovino / Misto", "corte_padronizado": "Hambúrguer Misto Friboi 672g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 16.99, "desconto": 0.0, "valor_total": 16.99}, {"id_item": 47, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "OVOS CODORNA GJA LOUREIRO PCT 200GR", "categoria_macro": "Proteínas", "subcategoria": "Ovos", "corte_padronizado": "Ovos de Codorna 200g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 8.99, "desconto": 0.0, "valor_total": 8.99}, {"id_item": 48, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MEIO ASA FGO SEARA 1kg IQF PCT CONG", "categoria_macro": "Proteínas", "subcategoria": "Ave/Frango", "corte_padronizado": "Meio da Asa (Tulipa) Frango 1kg", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 26.98, "desconto": 0.0, "valor_total": 26.98}, {"id_item": 49, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "IOG LIQ DANONE 1250G GF COCO", "categoria_macro": "Laticínios", "subcategoria": "Iogurtes", "corte_padronizado": "Iogurte Danone Coco 1.25kg", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 18.99, "desconto": 0.0, "valor_total": 18.99}, {"id_item": 50, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FILE MIGNON SUINO SULITA kg CONG TEMP", "categoria_macro": "Proteínas", "subcategoria": "Suíno", "corte_padronizado": "Filé Mignon Suíno Temperado", "quantidade": 0.978, "unidade": "KG", "preco_unitario": 33.98, "desconto": 0.0, "valor_total": 33.23}, {"id_item": 51, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LING PERNIL SEARA 600G CONG", "categoria_macro": "Proteínas", "subcategoria": "Suíno / Embutidos", "corte_padronizado": "Linguiça de Pernil Seara 600g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 11.89, "desconto": 0.0, "valor_total": 11.89}, {"id_item": 52, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "IOG GREGO BATAVO 90G FLOCOS", "categoria_macro": "Laticínios", "subcategoria": "Iogurtes", "corte_padronizado": "Iogurte Grego Batavo Flocos 90g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 3.49}, {"id_item": 53, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG FOFURA 60G QUEIJO", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Fofura Queijo 60g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.89, "desconto": 0.0, "valor_total": 3.78}, {"id_item": 54, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CROCANTISSIMO PULLMAN 40GR QUEIJO/CEB", "categoria_macro": "Mercearia", "subcategoria": "Torradas/Snacks", "corte_padronizado": "Torrada Crocantíssimo Queijo/Cebola 40g", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 2.49, "desconto": 0.0, "valor_total": 4.98}, {"id_item": 55, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG FOFURA 60G CHURRAS", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Fofura Churrasco 60g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 1.89, "desconto": 0.0, "valor_total": 1.89}, {"id_item": 56, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CROCANTISSIMO PULLMAN 40GR PEITO PERU/REQ", "categoria_macro": "Mercearia", "subcategoria": "Torradas/Snacks", "corte_padronizado": "Torrada Crocantíssimo Peito Peru 40g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 2.49, "desconto": 0.0, "valor_total": 2.49}, {"id_item": 57, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG FOFURA 60G REQUEIJAO", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Fofura Requeijão 60g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 1.89, "desconto": 0.4, "valor_total": 1.49}, {"id_item": 58, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "BISC POLV CRAC 80G QUEIJO", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito de Polvilho Crac Queijo 80g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.99, "desconto": 0.0, "valor_total": 3.99}, {"id_item": 59, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG FOFURA 60G REQUEIJAO", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Fofura Requeijão 60g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 1.89, "desconto": 0.1, "valor_total": 1.79}, {"id_item": 60, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG BATATA KERUS 30G OND SALSA E CEBOLA", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Batata Kerus Salsa e Cebola 30g", "quantidade": 2.0, "unidade": "PCT", "preco_unitario": 2.99, "desconto": 0.0, "valor_total": 5.98}, {"id_item": 61, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SALG TORCIDA 60G SABOR BACON", "categoria_macro": "Mercearia", "subcategoria": "Salgadinhos/Snacks", "corte_padronizado": "Salgadinho Torcida Bacon 60g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 1.79, "desconto": 0.0, "valor_total": 3.58}, {"id_item": 62, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "BISC COOKIES TODDY 57G MALHADO", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Cookies Toddy Malhado 57g", "quantidade": 3.0, "unidade": "UND", "preco_unitario": 2.29, "desconto": 0.0, "valor_total": 6.87}, {"id_item": 63, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CROCANTISSIMO PULLMAN 40GR PEITO PERU/REQ", "categoria_macro": "Mercearia", "subcategoria": "Torradas/Snacks", "corte_padronizado": "Torrada Crocantíssimo Peito Peru 40g", "quantidade": 1.0, "unidade": "PCT", "preco_unitario": 2.49, "desconto": 0.0, "valor_total": 2.49}, {"id_item": 64, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "BISC SALG PIRAQUE 100G QUEIJO", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Salgado Piraquê Queijo 100g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.69, "desconto": 0.0, "valor_total": 3.69}, {"id_item": 65, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FAROFA PRONTA BOM GOSTO 300G TRAD", "categoria_macro": "Mercearia", "subcategoria": "Farofas & Farinhas", "corte_padronizado": "Farofa Pronta Bom Gosto 300g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 6.99, "desconto": 0.0, "valor_total": 13.98}, {"id_item": 66, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "AZEITONA VDE TIO PACO 300G FAT SACHE", "categoria_macro": "Mercearia", "subcategoria": "Conservas", "corte_padronizado": "Azeitona Verde Fatiada Sachê 300g", "quantidade": 3.0, "unidade": "UND", "preco_unitario": 10.98, "desconto": 3.0, "valor_total": 29.94}, {"id_item": 67, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "BISC DOCE PIRAQUE 132G LEITE MALTADO", "categoria_macro": "Mercearia", "subcategoria": "Biscoitos/Snacks", "corte_padronizado": "Biscoito Leite Maltado Piraquê 132g", "quantidade": 5.0, "unidade": "UND", "preco_unitario": 3.59, "desconto": 0.0, "valor_total": 17.95}, {"id_item": 68, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SOPA VONO 17G INST MAND/CEB/SALSA", "categoria_macro": "Mercearia", "subcategoria": "Sopas & Pratos Prontos", "corte_padronizado": "Sopa Vono Instantânea Mandioca 17g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 3.49}, {"id_item": 69, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "REFR PRONTO DAFRUTA 1L LARAN", "categoria_macro": "Bebidas", "subcategoria": "Sucos & Refrescos", "corte_padronizado": "Refresco Dafruta Laranja 1L", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.99, "desconto": 0.0, "valor_total": 2.99}, {"id_item": 70, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "REFR PRONTO DAFRUTA 1L MARACUJA", "categoria_macro": "Bebidas", "subcategoria": "Sucos & Refrescos", "corte_padronizado": "Refresco Dafruta Maracujá 1L", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 2.99, "desconto": 0.0, "valor_total": 2.99}, {"id_item": 71, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "ARROZ PALMARES 1kg LF T2", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Arroz Palmares Longo Fino 1kg", "quantidade": 3.0, "unidade": "UND", "preco_unitario": 3.89, "desconto": 0.0, "valor_total": 11.67}, {"id_item": 72, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FARINHA DE ROSCA DA CASA kg", "categoria_macro": "Padaria/Matinais", "subcategoria": "Farinhas", "corte_padronizado": "Farinha de Rosca a Granel", "quantidade": 0.348, "unidade": "KG", "preco_unitario": 14.9, "desconto": 0.0, "valor_total": 5.19}, {"id_item": 73, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FEIJAD VERM GRAMFINO 500G", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Feijão Vermelho Gramfino 500g", "quantidade": 1.0, "unidade": "UND", "preco_unitario": 6.99, "desconto": 0.0, "valor_total": 6.99}, {"id_item": 74, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MILHO PIPOCA (CHINEZINHO) 400G", "categoria_macro": "Mercearia", "subcategoria": "Grãos & Cereais", "corte_padronizado": "Milho de Pipoca Chinezinho 400g", "quantidade": 2.0, "unidade": "UND", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 6.98}, {"id_item": 75, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MILHO VDE FUGINI 170G SACHE", "categoria_macro": "Mercearia", "subcategoria": "Conservas", "corte_padronizado": "Milho Verde Fugini 170g Sachê", "quantidade": 3.0, "unidade": "UN", "preco_unitario": 3.19, "desconto": 0.0, "valor_total": 9.57}, {"id_item": 76, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "QUEIJO PARM ITAMBE 50G RAL", "categoria_macro": "Laticínios", "subcategoria": "Queijos", "corte_padronizado": "Queijo Parmesão Ralado Itambé 50g", "quantidade": 4.0, "unidade": "UN", "preco_unitario": 6.39, "desconto": 0.0, "valor_total": 25.56}, {"id_item": 77, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "VINAGRE PEIXE 750ML ALCOOL", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Vinagre de Álcool Peixe 750ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 3.49, "desconto": 0.0, "valor_total": 3.49}, {"id_item": 78, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "QUEIJO PARM ITALAC 40G RAL", "categoria_macro": "Laticínios", "subcategoria": "Queijos", "corte_padronizado": "Queijo Parmesão Ralado Italac 40g", "quantidade": 1.0, "unidade": "EV", "preco_unitario": 4.99, "desconto": 0.0, "valor_total": 4.99}, {"id_item": 79, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MOLHO TOM PRAMESA 300G SACHE PIZZA", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Molho de Tomate Pramesa Pizza 300g", "quantidade": 3.0, "unidade": "UN", "preco_unitario": 1.99, "desconto": 0.0, "valor_total": 5.97}, {"id_item": 80, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CR LEITE PIRACANJUBA 200G TP", "categoria_macro": "Laticínios", "subcategoria": "Creme de Leite", "corte_padronizado": "Creme de Leite Piracanjuba 200g", "quantidade": 4.0, "unidade": "UN", "preco_unitario": 2.29, "desconto": 0.0, "valor_total": 9.16}, {"id_item": 81, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "MOLHO TOM PRAMESA 300G MANJERICAO", "categoria_macro": "Mercearia", "subcategoria": "Molhos & Condimentos", "corte_padronizado": "Molho de Tomate Pramesa Manjericão 300g", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 1.99, "desconto": 0.0, "valor_total": 1.99}, {"id_item": 82, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "FLU LIMAO THAITI kg", "categoria_macro": "Hortifrúti", "subcategoria": "Frutas", "corte_padronizado": "Limão Taiti", "quantidade": 0.67, "unidade": "KG", "preco_unitario": 8.99, "desconto": 0.0, "valor_total": 6.02}, {"id_item": 83, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "ATUM PESCADOR 140G SOL NAT", "categoria_macro": "Proteínas", "subcategoria": "Pescado", "corte_padronizado": "Atum Sólido Pescador 140g", "quantidade": 3.0, "unidade": "UN", "preco_unitario": 9.99, "desconto": 0.0, "valor_total": 29.97}, {"id_item": 84, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "PAO FRANCES KG CONG", "categoria_macro": "Padaria/Matinais", "subcategoria": "Pães", "corte_padronizado": "Pão Francês Congelado kg", "quantidade": 0.26, "unidade": "KG", "preco_unitario": 17.9, "desconto": 0.0, "valor_total": 4.65}, {"id_item": 85, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "AMAC ROUPA DIL URCA 2L BRISA", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Lavanderia", "corte_padronizado": "Amaciante Urca Brisa 2L", "quantidade": 1.0, "unidade": "LI", "preco_unitario": 6.29, "desconto": 0.0, "valor_total": 6.29}, {"id_item": 86, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "AMAC ROUPA CONC BABY SOFT 1,5L GF CARINHO", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Lavanderia", "corte_padronizado": "Amaciante Baby Soft Concentrado 1.5L", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 14.99, "desconto": 0.0, "valor_total": 14.99}, {"id_item": 87, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "AMAC ROUPA CONC BABY SOFT 1,5L GF CARINHO", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Lavanderia", "corte_padronizado": "Amaciante Baby Soft Concentrado 1.5L", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 14.99, "desconto": 0.0, "valor_total": 14.99}, {"id_item": 88, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "DESINF LIQ LYSOFORM 1L SUAVE", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Desinfetantes", "corte_padronizado": "Desinfetante Lysoform 1L", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 17.99, "desconto": 0.0, "valor_total": 17.99}, {"id_item": 89, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LIMPA BANH MR MUSCULO 400ML SACHE 5 EM 1", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Banheiro", "corte_padronizado": "Refil Mr Músculo Banheiro 400ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 15.29, "desconto": 0.0, "valor_total": 15.29}, {"id_item": 90, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LIMP DESENG MR MUSCULO 400ML SACHE, PROMO LIMAO", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Cozinha / Desengordurante", "corte_padronizado": "Refil Mr Músculo Desengordurante 400ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 11.99, "desconto": 0.0, "valor_total": 11.99}, {"id_item": 91, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LIMP MULTIUSO VEJA L500P450ML ORIG", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Multiuso", "corte_padronizado": "Limpador Veja Multiuso 500ml L500P450", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 3.99, "desconto": 0.0, "valor_total": 3.99}, {"id_item": 92, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SH PALMOLIVE 600ML ANTICASPA CLASSIC", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Cabelo", "corte_padronizado": "Shampoo Palmolive Anticaspa 600ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 25.99, "desconto": 0.0, "valor_total": 25.99}, {"id_item": 93, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "KIT SH 375ML+CONDIC 170ML ELSEVE LISO DOS SONHOS", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Cabelo", "corte_padronizado": "Kit Shampoo + Condicionador Elseve Liso", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 29.99, "desconto": 0.0, "valor_total": 29.99}, {"id_item": 94, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "ESPONJA ALKLIN ANTIRRISCO D FACE", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Utensílios de Limpeza", "corte_padronizado": "Esponja Alklin Antirrisco Dupla Face", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 2.39, "desconto": 0.0, "valor_total": 2.39}, {"id_item": 95, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "CR DENT SENSODYNE 90G, ORIG", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Bucal", "corte_padronizado": "Creme Dental Sensodyne Original 90g", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 15.89, "desconto": 0.0, "valor_total": 15.89}, {"id_item": 96, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "HASTES FLEX JOHNSON C/150 COTONETE", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Pessoal", "corte_padronizado": "Hastes Flexíveis Johnson c/ 150", "quantidade": 1.0, "unidade": "DP", "preco_unitario": 16.99, "desconto": 0.0, "valor_total": 16.99}, {"id_item": 97, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "LENCO UMED HUGGIES C/88 TRIPLA PROT", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Lenços Umedecidos", "corte_padronizado": "Lenço Umedecido Huggies c/ 88", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 9.99, "desconto": 0.0, "valor_total": 9.99}, {"id_item": 98, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "SACO LIXO BAGLIXO C/100 PIA/BANH ECON", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Sacos de Lixo", "corte_padronizado": "Saco de Lixo Baglixo Pia/Banheiro c/ 100", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 9.99, "desconto": 0.0, "valor_total": 9.99}, {"id_item": 99, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "GUARD PAP GRAND HOTEL 33X33CM", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Papéis / Guardanapos", "corte_padronizado": "Guardanapo Grand Hotel 33x33cm", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 10.99, "desconto": 0.0, "valor_total": 10.99}, {"id_item": 100, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "PANO PERFEX C/5 60X33CM", "categoria_macro": "Limpeza & Descartáveis", "subcategoria": "Panos de Limpeza", "corte_padronizado": "Pano Multiuso Perfex c/ 5", "quantidade": 1.0, "unidade": "PT", "preco_unitario": 8.99, "desconto": 0.0, "valor_total": 8.99}, {"id_item": 101, "id_compra": 2, "data": "17/08/2026", "estabelecimento": "Dom Atacadista", "descricao_original": "ESC DENT ORAL B L2P1 COMPLETE 40 MACIA", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Higiene Bucal", "corte_padronizado": "Escova Dental Oral-B L2P1", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 15.9, "desconto": 0.0, "valor_total": 15.9}, {"id_item": 102, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "CHOCOLATE TALENTO AO LEITE AVELA 25G", "categoria_macro": "Mercearia", "subcategoria": "Doces & Chocolates", "corte_padronizado": "Chocolate Talento Avelã 25g", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 5.69, "desconto": 0.0, "valor_total": 5.69}, {"id_item": 103, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "ESM IMPALA TRATAMENTO BASE FORTALECEDORA", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Cuidados Pessoais", "corte_padronizado": "Base Fortalecedora Impala", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 4.99, "desconto": 0.0, "valor_total": 4.99}, {"id_item": 104, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "ESM RISQUE GEL TOP COAT FIXADOR", "categoria_macro": "Higiene & Cuidados", "subcategoria": "Cuidados Pessoais", "corte_padronizado": "Esmalte Risqué Top Coat Fixador", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 15.49, "desconto": 0.0, "valor_total": 15.49}, {"id_item": 105, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "FUROATO DE MOMETASONA 50MCG SPRAY NASAL 120DS", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos", "corte_padronizado": "Furoato de Mometasona 50mcg Spray", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 62.71, "desconto": 22.71, "valor_total": 40.0}, {"id_item": 106, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "NAZZO HYALUJET 100ML", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos & Nasais", "corte_padronizado": "Nazzo Hyalujet Spray 100ml", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 67.49, "desconto": 7.49, "valor_total": 60.0}, {"id_item": 107, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "OMEGA 3 1000MG 120CP", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Suplementos & Vitaminas", "corte_padronizado": "Ômega 3 1000mg 120 Cápsulas", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 69.9, "desconto": 0.0, "valor_total": 69.9}, {"id_item": 108, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "SIMETICONA 125MG 10CAP GEL(MED)", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos", "corte_padronizado": "Simeticona 125mg 10 Cápsulas Gel", "quantidade": 2.0, "unidade": "UN", "preco_unitario": 6.69, "desconto": 0.0, "valor_total": 13.38}, {"id_item": 109, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "SIMETICONA 125MG 10CAP GEL(MED)", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos", "corte_padronizado": "Simeticona 125mg 10 Cápsulas Gel", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 6.69, "desconto": 0.0, "valor_total": 6.69}, {"id_item": 110, "id_compra": 3, "data": "19/08/2026", "estabelecimento": "Drogaria Campos Eliseos", "descricao_original": "UTROGESTAN 200MG 14CP", "categoria_macro": "Saúde & Farmácia", "subcategoria": "Medicamentos", "corte_padronizado": "Utrogestan 200mg 14 Cápsulas", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 87.51, "desconto": 16.87, "valor_total": 70.64}, {"id_item": 111, "id_compra": 4, "data": "20/08/2026", "estabelecimento": "Boteco do Manolo", "descricao_original": "REFEICAO / CONSUMO BOTECO DO MANOLO", "categoria_macro": "Alimentação Fora", "subcategoria": "Restaurante / Bar", "corte_padronizado": "Refeição Boteco do Manolo", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 92.6, "desconto": 0.0, "valor_total": 92.6}, {"id_item": 112, "id_compra": 5, "data": "20/08/2026", "estabelecimento": "Picanha ao Alho (Restaurante do Jorginho)", "descricao_original": "CAFE DA MANHA - PICANHA AO ALHO", "categoria_macro": "Alimentação Fora", "subcategoria": "Restaurante / Bar", "corte_padronizado": "Café da Manhã Picanha ao Alho", "quantidade": 1.0, "unidade": "UN", "preco_unitario": 25.0, "desconto": 0.0, "valor_total": 25.0}];
-        let selectedCategory = 'TODAS';
-        let catChartInstance = null;
-        let subChartInstance = null;
+  <section class="table-card">
+    <div class="table-header">
+      <h3 id="tableTitle">Extrato de Lançamentos</h3>
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar estabelecimento..." onkeyup="renderDashboard()">
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Data</th>
+            <th>Mês/Ano</th>
+            <th>Cartão</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th class="text-right">Valor</th>
+            <th class="text-center">Parcela / Status</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
 
-        const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-        const numFormatter = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+<script>
+const rawData = [
+  // Mercado Pago Julho/2026
+  [1, "02/07/2026", "07/2026", "Mercado Pago Visa", "MERCADOPAGO ZIYOUINTERMED", "Serviços & Assinaturas", 166.61, "12/21"],
+  [2, "26/09/2025", "07/2026", "Mercado Pago Visa", "BMB VivoEasy Lite", "Serviços & Assinaturas", 30.00, "10/12"],
+  [3, "15/12/2025", "07/2026", "Mercado Pago Visa", "AMAZON PRIME BR", "Serviços & Assinaturas", 13.90, "7/12"],
+  [4, "20/01/2026", "07/2026", "Mercado Pago Visa", "MERCADOLIVRE 2 PRODUTOS", "Compras & Eletrônicos", 223.11, "6/18"],
+  [5, "14/04/2026", "07/2026", "Mercado Pago Visa", "Globo Combo", "Serviços & Assinaturas", 48.90, "3/12"],
+  [6, "18/04/2026", "07/2026", "Mercado Pago Visa", "MP BRAIINSTORM", "Outros / Diversos", 32.33, "3/8"],
+  [7, "23/04/2026", "07/2026", "Mercado Pago Visa", "EC QCONCURSOS", "Serviços & Assinaturas", 31.09, "3/10"],
+  [8, "10/05/2026", "07/2026", "Mercado Pago Visa", "MP MERCADOLIVRE", "Compras & Eletrônicos", 39.95, "2/8"],
+  [9, "12/05/2026", "07/2026", "Mercado Pago Visa", "MERCADOLIVRE MERCADOLIVRE", "Compras & Eletrônicos", 23.09, "2/5"],
+  [10, "03/06/2026", "07/2026", "Mercado Pago Visa", "AMAZON BR *Amazon BR", "Compras & Eletrônicos", 64.23, "1/12"],
+  [11, "11/06/2026", "07/2026", "Mercado Pago Visa", "MERCADOLIVRE TITI", "Compras & Eletrônicos", 65.90, "1/1"],
+  [12, "16/06/2026", "07/2026", "Mercado Pago Visa", "CLARO FLEX", "Serviços & Assinaturas", 14.99, "1/1"],
+  [13, "21/06/2026", "07/2026", "Mercado Pago Visa", "MP LEONARDOSOUZA", "Outros / Diversos", 128.52, "1/1"],
+  [14, "22/06/2026", "07/2026", "Mercado Pago Visa", "MP MELIMAIS", "Serviços & Assinaturas", 19.90, "1/1"],
+  [15, "23/06/2026", "07/2026", "Mercado Pago Visa", "MERCADOLIVRE MERCADOLIVRE", "Compras & Eletrônicos", 71.39, "1/1"],
+  [16, "23/06/2026", "07/2026", "Mercado Pago Visa", "MERCADOLIVRE MERCADOLIVRE", "Compras & Eletrônicos", 19.00, "1/1"],
+  [17, "26/06/2026", "07/2026", "Mercado Pago Visa", "PAYPAL *DYNALISTINC", "Serviços & Assinaturas", 28.30, "1/1"],
+  [18, "26/06/2026", "07/2026", "Mercado Pago Visa", "VIVO EASY VIVO EA", "Serviços & Assinaturas", 38.00, "1/1"],
+  [19, "28/06/2026", "07/2026", "Mercado Pago Visa", "MERCADOLIVRE RECARGASEXPR", "Serviços & Assinaturas", 38.90, "1/1"],
+  [20, "28/06/2026", "07/2026", "Mercado Pago Visa", "EBN SPOTIFY", "Serviços & Assinaturas", 40.90, "1/1"],
+  // BB Julho/2026
+  [21,"05/06/2026","07/2026","Ourocard Visa 8971","SABORES DO MERCADAO RESENDE","Restaurantes & Delivery",44.70,"1/1"],
+  [22,"06/06/2026","07/2026","Ourocard Visa 8971","ESPETACULO RESTAURANTE RESENDE","Restaurantes & Delivery",83.60,"1/1"],
+  [23,"06/06/2026","07/2026","Ourocard Visa 8971","BELLA EMPADA RESENDEL RESENDE","Restaurantes & Delivery",22.00,"1/1"],
+  [24,"07/06/2026","07/2026","Ourocard Visa 8971","DELICIAS DO QUEIJO RESENDE","Restaurantes & Delivery",81.00,"1/1"],
+  [25,"07/06/2026","07/2026","Ourocard Visa 8971","SABORES DO MERCADAO RESENDE","Restaurantes & Delivery",67.51,"1/1"],
+  [26,"07/06/2026","07/2026","Ourocard Visa 8971","BrunaFerreira CRUZEIRO","Restaurantes & Delivery",36.70,"1/1"],
+  [27,"07/06/2026","07/2026","Ourocard Visa 8971","AH DA SILVA LEITE ME CRUZEIRO","Restaurantes & Delivery",31.00,"1/1"],
+  [28,"07/06/2026","07/2026","Ourocard Visa 8971","LUAN DA CUNHA SILVA 15 RESENDE","Restaurantes & Delivery",15.00,"1/1"],
+  [29,"09/06/2026","07/2026","Ourocard Visa 8971","M APARECIDA MOREIRAD VOLTA REDONDA","Restaurantes & Delivery",37.53,"1/1"],
+  [30,"09/06/2026","07/2026","Ourocard Visa 8971","CAFE LINDO RIO RIO DE JANEIR","Restaurantes & Delivery",22.40,"1/1"],
+  [31,"11/06/2026","07/2026","Ourocard Visa 8971","MP CHURRASCARIA393 OSASCO","Restaurantes & Delivery",38.50,"1/1"],
+  [32,"12/06/2026","07/2026","Ourocard Visa 8971","FATIMA TORTERIA JALISC RESENDE","Restaurantes & Delivery",15.00,"1/1"],
+  [33,"14/06/2026","07/2026","Ourocard Visa 8971","SABORES DO MERCADAO RESENDE","Restaurantes & Delivery",72.70,"1/1"],
+  [34,"15/06/2026","07/2026","Ourocard Visa 8971","LARA LACTINIOS RIO DE JANEIR","Restaurantes & Delivery",48.00,"1/1"],
+  [35,"17/06/2026","07/2026","Ourocard Visa 8971","SORVETERIA SOL E NEVE RESENDE","Restaurantes & Delivery",25.90,"1/1"],
+  [36,"18/06/2026","07/2026","Ourocard Visa 8971","ADR COMERCIO DE PRODUT RESENDE","Restaurantes & Delivery",44.00,"1/1"],
+  [37,"20/06/2026","07/2026","Ourocard Visa 8971","RUY BRASOLIN FILHO PASSA QUATRO","Restaurantes & Delivery",147.40,"1/1"],
+  [38,"22/06/2026","07/2026","Ourocard Visa 8971","ESPETACULO RESTAURANTE RESENDE","Restaurantes & Delivery",89.10,"1/1"],
+  [39,"27/06/2026","07/2026","Ourocard Visa 8971","SABORES DO MERCADAO RESENDE","Restaurantes & Delivery",51.21,"1/1"],
+  [40,"15/06/2026","07/2026","Ourocard Visa 8971","DROGARIAS PACHECO SA RESENDE","Saúde & Farmácia",124.48,"1/1"],
+  [41,"18/06/2026","07/2026","Ourocard Visa 8971","DrogariaModerna23 RESENDE","Saúde & Farmácia",62.94,"1/1"],
+  [42,"19/06/2026","07/2026","Ourocard Visa 8971","DROGARIA CAMPOS ELISE RESENDE","Saúde & Farmácia",115.96,"1/1"],
+  [43,"02/06/2026","07/2026","Ourocard Visa 8971","POINT DO PAO RESENDE","Alimentação & Supermercado",44.34,"1/1"],
+  [44,"02/06/2026","07/2026","Ourocard Visa 8971","HDI SEGUROS SA Sao Paulo","Outros / Diversos",221.15,"1/1"],
+  [45,"05/06/2026","07/2026","Ourocard Visa 8971","Resembig RESENDE","Alimentação & Supermercado",19.62,"1/1"],
+  [46,"05/06/2026","07/2026","Ourocard Visa 8971","Resembig RESENDE","Alimentação & Supermercado",58.36,"1/1"],
+  [47,"05/06/2026","07/2026","Ourocard Visa 8971","BARBEARIA SENA RESENDE","Outros / Diversos",30.00,"1/1"],
+  [48,"05/06/2026","07/2026","Ourocard Visa 8971","POSTO RESENDE RESENDE","Transporte & Combustível",50.00,"1/1"],
+  [49,"06/06/2026","07/2026","Ourocard Visa 8971","DOM ATACADISTA-RESEN RESENDE","Alimentação & Supermercado",989.16,"1/1"],
+  [50,"06/06/2026","07/2026","Ourocard Visa 8971","DOM ATACADISTA-RESEN RESENDE","Alimentação & Supermercado",123.11,"1/1"],
+  [51,"06/06/2026","07/2026","Ourocard Visa 8971","ATACADÃO 207A5 RESENDE","Alimentação & Supermercado",406.45,"1/1"],
+  [52,"07/06/2026","07/2026","Ourocard Visa 8971","VANDERSON MITAMONTE","Outros / Diversos",30.00,"1/1"],
+  [53,"08/06/2026","07/2026","Ourocard Visa 8971","S.M. PRESENTES RESENDE","Compras & Eletrônicos",25.00,"1/1"],
+  [54,"09/06/2026","07/2026","Ourocard Visa 8971","SERV. NUVEM INTELBRAS SAO JOSE","Serviços & Assinaturas",23.50,"1/1"],
+  [55,"10/06/2026","07/2026","Ourocard Visa 8971","VATEL ELETRONICA RESENDE","Compras & Eletrônicos",115.00,"1/1"],
+  [56,"11/06/2026","07/2026","Ourocard Visa 8971","POINT DO PAO RESENDE","Alimentação & Supermercado",26.42,"1/1"],
+  [57,"11/06/2026","07/2026","Ourocard Visa 8971","AUTO POSTO CASACA LTDA GUAPIMIRIM","Transporte & Combustível",19.98,"1/1"],
+  [58,"12/06/2026","07/2026","Ourocard Visa 8971","MALZAC RESENDE","Compras & Eletrônicos",42.00,"1/1"],
+  [59,"18/06/2026","07/2026","Ourocard Visa 8971","Resembig RESENDE","Alimentação & Supermercado",82.97,"1/1"],
+  [60,"20/06/2026","07/2026","Ourocard Visa 8971","PANIFICADORA E CONFEIT PASSA QUATRO","Alimentação & Supermercado",41.50,"1/1"],
+  [61,"20/06/2026","07/2026","Ourocard Visa 8971","CASA DE QUEIJOS FAZEND PASSA QUATRO","Alimentação & Supermercado",18.50,"1/1"],
+  [62,"21/06/2026","07/2026","Ourocard Visa 8971","Resembig RESENDE","Alimentação & Supermercado",71.70,"1/1"],
+  [63,"22/06/2026","07/2026","Ourocard Visa 8971","POINT DO PAO RESENDE","Alimentação & Supermercado",24.69,"1/1"],
+  [64,"23/06/2026","07/2026","Ourocard Visa 8971","AMERICANAS SA RESENDE","Compras & Eletrônicos",30.98,"1/1"],
+  [65,"26/06/2026","07/2026","Ourocard Visa 8971","PETRILI MATERIAL ELETR RESENDE","Compras & Eletrônicos",79.25,"1/1"],
+  [66,"27/06/2026","07/2026","Ourocard Visa 8971","BARBEARIA SENA RESENDE","Outros / Diversos",30.00,"1/1"],
+  [67,"27/06/2026","07/2026","Ourocard Visa 8971","GRAZI LOBO RESENDE","Outros / Diversos",145.00,"1/1"],
+  [68,"27/06/2026","07/2026","Ourocard Visa 8971","ATACADAO 207AS RESENDE","Alimentação & Supermercado",233.04,"1/1"],
+  [69,"29/06/2026","07/2026","Ourocard Visa 8971","AutoCenter Trato RESENDE","Transporte & Combustível",50.00,"1/1"],
+  [70,"04/06/2026","07/2026","Ourocard Visa 8971","SUPERMECADO MAXIMO RESENDE","Alimentação & Supermercado",46.14,"1/1"],
+  [71,"15/06/2026","07/2026","Ourocard Visa 8971","SUPERMECADO MAXIMO RESENDE","Alimentação & Supermercado",83.43,"1/1"],
+  [72,"19/06/2026","07/2026","Ourocard Visa 8971","ROYAL CENTER RESENDE","Compras & Eletrônicos",129.88,"1/1"],
+  [73,"24/06/2026","07/2026","Ourocard Visa 8971","SUPERMECADO MAXIMO RESENDE","Alimentação & Supermercado",46.21,"1/1"],
+  [74,"26/06/2026","07/2026","Ourocard Visa 8971","ROYAL CENTER RESENDE","Compras & Eletrônicos",16.09,"1/1"],
+  [75,"26/06/2026","07/2026","Ourocard Visa 8971","SUPERMECADO MAXIMO RESENDE","Alimentação & Supermercado",121.90,"1/1"],
+  [76,"26/06/2026","07/2026","Ourocard Visa 8971","DL UberRides Sao Paulo","Transporte & Combustível",9.95,"1/1"],
+  [77,"03/06/2026","07/2026","Ourocard Visa 8971","RV COMERCIO RESENDE","Compras & Eletrônicos",89.99,"1/1"],
+  [78,"10/06/2026","07/2026","Ourocard Visa 8971","CalcadosKids RESENDE","Compras & Eletrônicos",139.90,"1/1"],
+  [79,"14/06/2026","07/2026","Ourocard Visa 8971","AlineCristina CRUZEIRO","Compras & Eletrônicos",42.00,"1/1"],
+  [80,"19/06/2026","07/2026","Ourocard Visa 8971","MAIS TOP RESENDE RESENDE","Compras & Eletrônicos",65.00,"1/1"],
+  [81,"20/06/2026","07/2026","Ourocard Visa 8971","JO MODAS PASSA QUATRO","Compras & Eletrônicos",53.00,"1/1"],
+  [82,"21/06/2026","07/2026","Ourocard Visa 8971","CACAU SHOW PASSA QUATRO","Alimentação & Supermercado",26.04,"1/1"],
+  [83,"01/06/2026","07/2026","Ourocard Visa 8971","DL GOOGLE YouTube SAO PAULO","Serviços & Assinaturas",53.90,"1/1"],
+  [84,"11/05/2026","07/2026","Ourocard Visa 8971","Jose CarlosMar RESENDE","Outros / Diversos",99.66,"2/3"],
+  [85,"14/05/2026","07/2026","Ourocard Visa 8971","CEA RES 470 E RECIFE","Compras & Eletrônicos",89.99,"2/2"],
+  [86,"23/05/2026","07/2026","Ourocard Visa 8971","GR COMERCIO D RESENDE","Outros / Diversos",74.95,"2/2"],
+  [87,"30/06/2026","07/2026","Ourocard Visa 8971","S.M. PRESENTE RESENDE","Compras & Eletrônicos",81.62,"1/5"],
+  // Bradesco Julho/2026
+  [88,"24/01/2026","07/2026","Bradesco Visa 7046","LITE VivoEasyAnua 06/12","Serviços & Assinaturas",30.00,"6/12"],
+  [89,"19/06/2026","07/2026","Bradesco Visa 7046","TheKingBurguer","Restaurantes & Delivery",32.98,"1/1"],
+  [90,"24/06/2026","07/2026","Bradesco Visa 7046","SEGURO SUPERPROTEGIDO","Outros / Diversos",9.99,"1/1"],
+  // Magalu Julho/2026
+  [91,"25/01/2026","07/2026","Magalu Visa 0189","SAMSUNG NO ITAU","Compras & Eletrônicos",81.00,"18/21"],
+  [92,"29/08/2025","07/2026","Magalu Visa 8091","EBN Canva","Serviços & Assinaturas",24.24,"11/12"],
+  [93,"05/01/2026","07/2026","Magalu Visa 8091","MAGAZINE LUIZA 2000","Compras & Eletrônicos",201.98,"6/10"],
+  [94,"10/02/2026","07/2026","Magalu Visa 8091","LIVRO FACIL Livro","Compras & Eletrônicos",106.15,"5/9"],
+  [95,"06/06/2026","07/2026","Magalu Visa 8091","Google Proton VPN","Serviços & Assinaturas",0.99,"1/1"],
+  [96,"07/06/2026","07/2026","Magalu Visa 8091","Google One","Serviços & Assinaturas",9.99,"1/1"],
+  [97,"25/06/2026","07/2026","Magalu Visa 8091","Google My Finances","Serviços & Assinaturas",99.90,"1/1"],
+  [98,"28/06/2026","07/2026","Magalu Visa 8091","Google Camera Control","Serviços & Assinaturas",9.49,"1/1"],
+  [99,"14/12/2025","07/2026","Magalu Visa 3230","HTM JornadaLooker50","Serviços & Assinaturas",23.68,"7/12"],
+  // Itaú Julho/2026
+  [100,"13/06/2026","07/2026","Itaú Visa 5902","MARCONDES E FI","Compras & Eletrônicos",204.89,"1/10"],
+  [101,"17/06/2026","07/2026","Itaú Visa 5902","HEALTH RESENDE","Saúde & Farmácia",113.49,"1/10"],
+  [102,"23/06/2026","07/2026","Itaú Visa 5902","CINESHOW RESENDE","Lazer & Entretenimento",37.50,"1/6"],
+  [103,"23/06/2026","07/2026","Itaú Visa 5902","CINESHOW RESENDE BR","Lazer & Entretenimento",38.00,"1/1"],
+  [104,"12/06/2026","07/2026","Itaú Visa 5902","ANTHROPIC CLAUDE SUB","Serviços & Assinaturas",117.67,"1/1"],
+  [105,"25/06/2026","07/2026","Itaú Visa 5902","ANTHROPIC.COM","Serviços & Assinaturas",27.55,"1/1"],
+  [106,"25/06/2026","07/2026","Itaú Visa 5902","REPASSE IOF INTERNACIONAL","Outros / Diversos",5.07,"1/1"],
+  // BB Agosto/2026
+  [107,"07/07/2026","08/2026","Ourocard Visa 8971","CONVENIENCIA XALE BARRA DO PIRA","Restaurantes & Delivery",10.50,"1/1"],
+  [108,"10/07/2026","08/2026","Ourocard Visa 8971","REFUGIO PIRAI","Restaurantes & Delivery",23.00,"1/1"],
+  [109,"13/07/2026","08/2026","Ourocard Visa 8971","PICANHA AO ALHO SEROPEDICA","Restaurantes & Delivery",19.00,"1/1"],
+  [110,"14/07/2026","08/2026","Ourocard Visa 8971","VALENCA Restaurante","Restaurantes & Delivery",73.39,"1/1"],
+  [111,"19/07/2026","08/2026","Ourocard Visa 8971","AntonioCarlos LORENA","Restaurantes & Delivery",20.00,"1/1"],
+  [112,"26/07/2026","08/2026","Ourocard Visa 8971","DELICIAS DO QUEIJO RESENDE","Restaurantes & Delivery",32.37,"1/1"],
+  [113,"26/07/2026","08/2026","Ourocard Visa 8971","MARIANO AUGUSTO RODRIG RESENDE","Restaurantes & Delivery",15.00,"1/1"],
+  [114,"27/07/2026","08/2026","Ourocard Visa 8971","PADOCA RESENDE","Restaurantes & Delivery",54.00,"1/1"],
+  [115,"28/07/2026","08/2026","Ourocard Visa 8971","MP CHURRASCARIA393 VASSOURAS","Restaurantes & Delivery",35.00,"1/1"],
+  [116,"21/07/2026","08/2026","Ourocard Visa 8971","DROGARIA PETILLO LTDA ANGRA DOS REI","Saúde & Farmácia",174.47,"1/1"],
+  [117,"30/07/2026","08/2026","Ourocard Visa 8971","DROGARIA CAMPOS ELISE RESENDE","Saúde & Farmácia",253.47,"1/1"],
+  [118,"01/07/2026","08/2026","Ourocard Visa 8971","Google YouTube SAO PAULO","Serviços & Assinaturas",53.90,"1/1"],
+  [119,"02/07/2026","08/2026","Ourocard Visa 8971","HDI SEGUROS SA Sao Paulo","Outros / Diversos",221.15,"1/1"],
+  [120,"03/07/2026","08/2026","Ourocard Visa 8971","PADARIA NS DE FATIMA RESENDE","Alimentação & Supermercado",13.07,"1/1"],
+  [121,"03/07/2026","08/2026","Ourocard Visa 8971","RenascencaModas RESENDE","Compras & Eletrônicos",22.00,"1/1"],
+  [122,"03/07/2026","08/2026","Ourocard Visa 8971","BADY FERRAGENS E FERR RESENDE","Compras & Eletrônicos",78.50,"1/1"],
+  [123,"07/07/2026","08/2026","Ourocard Visa 8971","Padaria Nossa Senho BARRA MANSA","Alimentação & Supermercado",32.00,"1/1"],
+  [124,"08/07/2026","08/2026","Ourocard Visa 8971","ATACADAO 207AS RESENDE","Alimentação & Supermercado",1042.31,"1/1"],
+  [125,"10/07/2026","08/2026","Ourocard Visa 8971","SERV. NUVEM INTELBRAS SAO JOSE","Serviços & Assinaturas",23.50,"1/1"],
+  [126,"10/07/2026","08/2026","Ourocard Visa 8971","POSTO MONTE CASTELO RESENDE","Transporte & Combustível",51.57,"1/1"],
+  [127,"10/07/2026","08/2026","Ourocard Visa 8971","AUTO POSTO NOSSA SENHO MARICA","Transporte & Combustível",71.45,"1/1"],
+  [128,"10/07/2026","08/2026","Ourocard Visa 8971","REFUGIO P. PIRAI","Restaurantes & Delivery",50.00,"1/1"],
+  [129,"12/07/2026","08/2026","Ourocard Visa 8971","POSTO JR VOLTA REDONDA","Transporte & Combustível",81.37,"1/1"],
+  [130,"18/07/2026","08/2026","Ourocard Visa 8971","POSTO MONTE CASTELO RESENDE","Transporte & Combustível",52.65,"1/1"],
+  [131,"18/07/2026","08/2026","Ourocard Visa 8971","ATACADAO 207AS RESENDE","Alimentação & Supermercado",161.33,"1/1"],
+  [132,"21/07/2026","08/2026","Ourocard Visa 8971","MATHEUS HEN RESENDE","Outros / Diversos",40.00,"1/1"],
+  [133,"21/07/2026","08/2026","Ourocard Visa 8971","POSTO ROMA LTDA VOLTA REDONDA","Transporte & Combustível",51.26,"1/1"],
+  [134,"22/07/2026","08/2026","Ourocard Visa 8971","POSTO ROMA LTDA VOLTA REDONDA","Transporte & Combustível",64.68,"1/1"],
+  [135,"26/07/2026","08/2026","Ourocard Visa 8971","ANA PAULA D ITAMONTE","Outros / Diversos",25.00,"1/1"],
+  [136,"27/07/2026","08/2026","Ourocard Visa 8971","POSTO DAS PALMEIRAS BM BARRA MANSA","Transporte & Combustível",81.37,"1/1"],
+  [137,"31/07/2026","08/2026","Ourocard Visa 8971","POINT DO PAO RESENDE","Alimentação & Supermercado",35.84,"1/1"],
+  [138,"31/07/2026","08/2026","Ourocard Visa 8971","SPANI ATACADISTA RESENDE","Alimentação & Supermercado",139.72,"1/1"],
+  [139,"02/08/2026","08/2026","Ourocard Visa 8971","HDI SEGUROS SA Sao Paulo","Outros / Diversos",221.15,"1/1"],
+  [140,"31/07/2026","08/2026","Ourocard Visa 8971","SUPERMECADO MAXIMO RESENDE","Alimentação & Supermercado",29.08,"1/1"],
+  [141,"31/07/2026","08/2026","Ourocard Visa 8971","SUPERMECADO MAXIMO RESENDE","Alimentação & Supermercado",101.40,"1/1"],
+  [142,"01/07/2026","08/2026","Ourocard Visa 8971","DL UberRides Sao Paulo","Transporte & Combustível",19.98,"1/1"],
+  [143,"17/07/2026","08/2026","Ourocard Visa 8971","DL UberRides Sao Paulo","Transporte & Combustível",13.96,"1/1"],
+  [144,"19/07/2026","08/2026","Ourocard Visa 8971","AlineCristina CRUZEIRO","Compras & Eletrônicos",69.00,"1/1"],
+  [145,"24/07/2026","08/2026","Ourocard Visa 8971","Renata Moreira MACAE","Compras & Eletrônicos",79.80,"1/1"],
+  [146,"01/08/2026","08/2026","Ourocard Visa 8971","Google YouTube SAO PAULO","Serviços & Assinaturas",53.90,"1/1"],
+  [147,"11/05/2026","08/2026","Ourocard Visa 8971","JoseCarlosMar RESENDE","Outros / Diversos",99.66,"3/3"],
+  [148,"30/06/2026","08/2026","Ourocard Visa 8971","S.M. PRESENTE RESENDE","Compras & Eletrônicos",81.59,"2/5"],
+  [149,"02/07/2026","08/2026","Ourocard Visa 8971","FARMACIA CONF RESENDE","Saúde & Farmácia",548.30,"1/2"],
+  [150,"03/07/2026","08/2026","Ourocard Visa 8971","MAIS TOP RESE RESENDE","Compras & Eletrônicos",77.50,"1/2"],
+  [151,"31/07/2026","08/2026","Ourocard Visa 8971","WORLD TENIS RESENDE","Compras & Eletrônicos",122.02,"1/5"],
+  // Mercado Pago Agosto/2026
+  [152,"02/07/2026","08/2026","Mercado Pago Visa 9695","MERCADOPAGO ZIYOUINTERMED","Serviços & Assinaturas",166.61,"13/21"],
+  [153,"26/09/2025","08/2026","Mercado Pago Visa 9695","BMB VivoEasy Lite","Serviços & Assinaturas",30.00,"11/12"],
+  [154,"15/12/2025","08/2026","Mercado Pago Visa 9695","AMAZON PRIME BR","Serviços & Assinaturas",13.90,"8/12"],
+  [155,"20/01/2026","08/2026","Mercado Pago Visa 9695","MERCADOLIVRE 2PRODUTOS","Compras & Eletrônicos",223.11,"7/18"],
+  [156,"14/04/2026","08/2026","Mercado Pago Visa 9695","Globo Combo","Serviços & Assinaturas",48.90,"4/12"],
+  [157,"18/04/2026","08/2026","Mercado Pago Visa 9695","MP BRAIINSTORM","Outros / Diversos",32.33,"4/8"],
+  [158,"23/04/2026","08/2026","Mercado Pago Visa 9695","EC QCONCURSOS","Serviços & Assinaturas",31.09,"4/10"],
+  [159,"10/05/2026","08/2026","Mercado Pago Visa 9695","MP MERCADOLIVRE","Compras & Eletrônicos",39.95,"3/8"],
+  [160,"12/05/2026","08/2026","Mercado Pago Visa 9695","MERCADOLIVRE MERCADOLIVRE","Compras & Eletrônicos",23.09,"3/5"],
+  [161,"03/06/2026","08/2026","Mercado Pago Visa 9695","AMAZON BR Amazon BR","Compras & Eletrônicos",64.16,"2/12"],
+  [162,"03/07/2026","08/2026","Mercado Pago Visa 9695","AMAZONMKTPLC GAMESIRTE","Compras & Eletrônicos",46.50,"1/6"],
+  [163,"08/07/2026","08/2026","Mercado Pago Visa 9695","AMAZONMKTPLC GRUPOMULT","Compras & Eletrônicos",58.90,"1/10"],
+  [164,"10/07/2026","08/2026","Mercado Pago Visa 9695","MP CONECTCAR","Transporte & Combustível",16.34,"1/1"],
+  [165,"10/07/2026","08/2026","Mercado Pago Visa 9695","MP CONECTCAR","Transporte & Combustível",6.60,"1/1"],
+  [166,"16/07/2026","08/2026","Mercado Pago Visa 9695","CLARO FLEX","Serviços & Assinaturas",34.99,"1/1"],
+  [167,"21/07/2026","08/2026","Mercado Pago Visa 9695","CLAROTVMAIS Claro Tv","Serviços & Assinaturas",99.90,"1/1"],
+  [168,"22/07/2026","08/2026","Mercado Pago Visa 9695","MP MELIMAIS","Serviços & Assinaturas",9.90,"1/1"],
+  [169,"24/07/2026","08/2026","Mercado Pago Visa 9695","AMAZON BR Amazon BR","Compras & Eletrônicos",29.89,"1/1"],
+  [170,"26/07/2026","08/2026","Mercado Pago Visa 9695","MERCADOLIVRE MERCADOLIVRE","Compras & Eletrônicos",37.92,"1/1"],
+  [171,"26/07/2026","08/2026","Mercado Pago Visa 9695","MERCADOLIVRE*JJOIASPREMIU","Compras & Eletrônicos",24.96,"1/1"],
+  [172,"26/07/2026","08/2026","Mercado Pago Visa 9695","VIVO EASY VIVO EA","Serviços & Assinaturas",38.00,"1/1"],
+  [173,"28/07/2026","08/2026","Mercado Pago Visa 9695","EBN SPOTIFY","Serviços & Assinaturas",40.90,"1/1"]
+];
 
-        const categoryColors = {
-            "Proteínas": "#f87171",
-            "Mercearia": "#fbbf24",
-            "Higiene & Cuidados": "#34d399",
-            "Saúde & Farmácia": "#2dd4bf",
-            "Limpeza & Descartáveis": "#c084fc",
-            "Alimentação Fora": "#f59e0b",
-            "Laticínios": "#38bdf8",
-            "Padaria/Matinais": "#fb923c",
-            "Hortifrúti": "#4ade80",
-            "Bebidas": "#f472b6"
-        };
+const futureMonthsList = [
+  '09/2026', '10/2026', '11/2026', '12/2026',
+  '01/2027', '02/2027', '03/2027', '04/2027',
+  '05/2027', '06/2027', '07/2027', '08/2027'
+];
 
-        const badgeClasses = {
-            "Proteínas": "badge-prot",
-            "Mercearia": "badge-merc",
-            "Laticínios": "badge-lat",
-            "Limpeza & Descartáveis": "badge-limp",
-            "Higiene & Cuidados": "badge-hig",
-            "Saúde & Farmácia": "badge-farma",
-            "Alimentação Fora": "badge-rua",
-            "Padaria/Matinais": "badge-pad",
-            "Bebidas": "badge-beb",
-            "Hortifrúti": "badge-horti"
-        };
+let catChart, cardChart, projectionChart;
 
-        function init() {
-            setupCategoryControls();
-            renderCategoryPie();
-            updateDashboard();
-        }
+function isParcelado(parcela) {
+  return parcela && parcela !== '1/1' && parcela !== 'Única' && parcela !== '';
+}
 
-        function setupCategoryControls() {
-            const categories = Array.from(new Set(rawData.map(d => d.categoria_macro)));
-            const select = document.getElementById('catSelect');
-            const chips = document.getElementById('chipsContainer');
-            
-            chips.innerHTML = '<div class="filter-chip active" onclick="selectCategory(\'TODAS\')">Todas</div>';
-            
-            categories.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                select.appendChild(opt);
+function formatBRL(val) {
+  return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
 
-                const chip = document.createElement('div');
-                chip.className = 'filter-chip';
-                chip.dataset.cat = cat;
-                chip.textContent = cat;
-                chip.onclick = () => selectCategory(cat);
-                chips.appendChild(chip);
-            });
-        }
+// Gera lista de registros futuros com base no último status conhecido
+function generateFutureData(targetMonth) {
+  const futureIndex = futureMonthsList.indexOf(targetMonth);
+  if (futureIndex === -1) return [];
 
-        function selectCategory(cat) {
-            selectedCategory = cat;
-            document.getElementById('catSelect').value = cat;
-            
-            document.querySelectorAll('.filter-chip').forEach(el => {
-                if ((cat === 'TODAS' && el.textContent === 'Todas') || el.dataset.cat === cat) {
-                    el.classList.add('active');
-                } else {
-                    el.classList.remove('active');
-                }
-            });
+  const parcelasAtivas = rawData.filter(r => isParcelado(r[7]) && (r[2] === '08/2026' || (r[2] === '07/2026' && !['Mercado Pago Visa 9695', 'Ourocard Visa 8971'].includes(r[3]))));
+  
+  const futureItems = [];
+  parcelasAtivas.forEach((r, idx) => {
+    const [atualStr, totalStr] = r[7].split('/');
+    const atual = parseInt(atualStr);
+    const total = parseInt(totalStr);
+    const offset = futureIndex + 1;
+    const novaParcelaNum = atual + offset;
 
-            updateDashboard();
-        }
+    if (novaParcelaNum <= total) {
+      futureItems.push([
+        `FUT-${idx + 1}`,
+        `01/${targetMonth}`,
+        targetMonth,
+        r[3],
+        r[4],
+        r[5],
+        r[6],
+        `${novaParcelaNum}/${total}`
+      ]);
+    }
+  });
 
-        function updateDashboard() {
-            const totalGeral = rawData.reduce((acc, it) => acc + it.valor_total, 0);
-            const filteredData = selectedCategory === 'TODAS' 
-                ? rawData 
-                : rawData.filter(d => d.categoria_macro === selectedCategory);
+  return futureItems;
+}
 
-            const gastoFiltrado = filteredData.reduce((acc, it) => acc + it.valor_total, 0);
-            const qtdCompras = new Set(filteredData.map(d => d.id_compra)).size || 1;
-            const ticketMedio = gastoFiltrado / qtdCompras;
-            const share = (gastoFiltrado / totalGeral) * 100;
-            const volumeTotal = filteredData.reduce((acc, it) => acc + it.quantidade, 0);
+function initFilters() {
+  const cards = [...new Set(rawData.map(r => r[3]))].sort();
+  const categories = [...new Set(rawData.map(r => r[5]))].sort();
 
-            document.getElementById('kpiGasto').textContent = brlFormatter.format(gastoFiltrado);
-            document.getElementById('kpiTicket').textContent = brlFormatter.format(ticketMedio);
-            document.getElementById('kpiShare').textContent = share.toFixed(1).replace('.', ',') + '%';
-            document.getElementById('kpiItens').textContent = filteredData.length + ' registros';
-            document.getElementById('kpiVolumeSub').textContent = numFormatter.format(volumeTotal) + ' unidades/kg';
+  const cardSelect = document.getElementById('filterCard');
+  cards.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    cardSelect.appendChild(opt);
+  });
 
-            renderSubcategoryBar(filteredData);
-            renderTable(filteredData);
-        }
+  const catSelect = document.getElementById('filterCategory');
+  categories.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    catSelect.appendChild(opt);
+  });
+}
 
-        function renderCategoryPie() {
-            const catMap = {};
-            rawData.forEach(d => {
-                catMap[d.categoria_macro] = (catMap[d.categoria_macro] || 0) + d.valor_total;
-            });
+function renderDashboard() {
+  const fMonth = document.getElementById('filterMonth').value;
+  const fCard = document.getElementById('filterCard').value;
+  const fCat = document.getElementById('filterCategory').value;
+  const fInst = document.getElementById('filterInstallment').value;
+  const search = document.getElementById('searchInput').value.toLowerCase();
 
-            const labels = Object.keys(catMap).sort((a, b) => catMap[b] - catMap[a]);
-            const values = labels.map(l => catMap[l]);
-            const bgColors = labels.map(l => categoryColors[l] || '#94a3b8');
+  const isFuture = futureMonthsList.includes(fMonth);
+  document.getElementById('futureAlert').style.display = isFuture ? 'flex' : 'none';
 
-            const ctx = document.getElementById('catChart').getContext('2d');
-            catChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: bgColors,
-                        borderWidth: 0,
-                        hoverOffset: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    onClick: (evt, activeEls) => {
-                        if (activeEls && activeEls.length > 0) {
-                            const idx = activeEls[0].index;
-                            const clickedCat = labels[idx];
-                            selectCategory(selectedCategory === clickedCat ? 'TODAS' : clickedCat);
-                        }
-                    },
-                    plugins: {
-                        legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 12, padding: 12 } },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.label + ': ' + brlFormatter.format(context.raw);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+  let dataSource = [];
+  if (isFuture) {
+    dataSource = generateFutureData(fMonth);
+    document.getElementById('kpiTotalTitle').textContent = "Total Comprometido (Fixo)";
+  } else if (fMonth === 'ALL') {
+    dataSource = rawData;
+    document.getElementById('kpiTotalTitle').textContent = "Total Geral";
+  } else {
+    dataSource = rawData.filter(r => r[2] === fMonth);
+    document.getElementById('kpiTotalTitle').textContent = "Total Geral";
+  }
 
-        function renderSubcategoryBar(data) {
-            const subMap = {};
-            const isAll = selectedCategory === 'TODAS';
-            const groupKey = isAll ? 'categoria_macro' : 'subcategoria';
-            
-            data.forEach(d => {
-                const key = d[groupKey];
-                subMap[key] = (subMap[key] || 0) + d.valor_total;
-            });
+  const filtered = dataSource.filter(r => {
+    const matchCard = fCard === 'ALL' || r[3] === fCard;
+    const matchCat = fCat === 'ALL' || r[5] === fCat;
+    const matchSearch = r[4].toLowerCase().includes(search);
+    
+    let matchInst = true;
+    if (fInst === 'PARCELADO') matchInst = isParcelado(r[7]);
+    if (fInst === 'VISTA') matchInst = !isParcelado(r[7]);
 
-            const labels = Object.keys(subMap).sort((a, b) => subMap[b] - subMap[a]);
-            const values = labels.map(l => subMap[l]);
-            const bgColors = labels.map(l => isAll ? (categoryColors[l] || '#38bdf8') : (categoryColors[selectedCategory] || '#38bdf8'));
+    return matchCard && matchCat && matchSearch && matchInst;
+  });
 
-            document.getElementById('barChartTitle').textContent = isAll 
-                ? 'Gastos por Categoria Macro (R$)' 
-                : 'Subcategorias de ' + selectedCategory + ' (R$)';
+  // KPIs
+  const total = filtered.reduce((acc, r) => acc + r[6], 0);
+  const totalParcelado = filtered.filter(r => isParcelado(r[7])).reduce((acc, r) => acc + r[6], 0);
+  const totalVista = isFuture ? 0 : (total - totalParcelado);
+  const count = filtered.length;
 
-            if (subChartInstance) {
-                subChartInstance.destroy();
+  document.getElementById('kpiTotal').textContent = formatBRL(total);
+  document.getElementById('kpiParcelado').textContent = formatBRL(totalParcelado);
+  document.getElementById('kpiVista').textContent = isFuture ? "Não consolidada" : formatBRL(totalVista);
+  document.getElementById('kpiCount').textContent = count;
+
+  // Render Table
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  if (isFuture && fInst === 'VISTA') {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-msg">ℹ️ Ainda não há compras à vista consolidadas na fatura de ${fMonth}. Elas aparecerão conforme o fechamento da fatura.</td></tr>`;
+  } else if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-msg">Nenhum lançamento encontrado para os filtros selecionados.</td></tr>`;
+  } else {
+    filtered.forEach(r => {
+      const tr = document.createElement('tr');
+      const badgeClass = isFuture ? 'badge-futuro' : (isParcelado(r[7]) ? 'badge-parcelado' : 'badge-vista');
+      const statusText = isFuture ? `${r[7]} (Projeção)` : r[7];
+      tr.innerHTML = `
+        <td>${r[0]}</td>
+        <td>${r[1]}</td>
+        <td>${r[2]}</td>
+        <td>${r[3]}</td>
+        <td>${r[4]}</td>
+        <td>${r[5]}</td>
+        <td class="text-right">${formatBRL(r[6])}</td>
+        <td class="text-center"><span class="badge ${badgeClass}">${statusText}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Agregações para Gráficos
+  const catMap = {};
+  const cardMap = {};
+
+  filtered.forEach(r => {
+    catMap[r[5]] = (catMap[r[5]] || 0) + r[6];
+    cardMap[r[3]] = (cardMap[r[3]] || 0) + r[6];
+  });
+
+  updateCharts(catMap, cardMap, fMonth);
+}
+
+function updateCharts(catData, cardData, selectedMonth) {
+  const catCtx = document.getElementById('categoryChart').getContext('2d');
+  const cardCtx = document.getElementById('cardChart').getContext('2d');
+  const projCtx = document.getElementById('projectionChart').getContext('2d');
+
+  if (catChart) catChart.destroy();
+  if (cardChart) cardChart.destroy();
+  if (projectionChart) projectionChart.destroy();
+
+  // Timeline com Realizado (Jul e Ago) + Projeções
+  const timelineLabels = ['07/2026', '08/2026', ...futureMonthsList];
+  const timelineData = timelineLabels.map(m => {
+    if (m === '07/2026') return rawData.filter(r => r[2] === '07/2026').reduce((a, b) => a + b[6], 0);
+    if (m === '08/2026') return rawData.filter(r => r[2] === '08/2026').reduce((a, b) => a + b[6], 0);
+    const fut = generateFutureData(m);
+    return fut.reduce((a, b) => a + b[6], 0);
+  });
+
+  const bgColors = timelineLabels.map(m => {
+    if (m === selectedMonth) return '#ec4899';
+    return (m === '07/2026' || m === '08/2026') ? '#3b82f6' : '#f59e0b';
+  });
+
+  projectionChart = new Chart(projCtx, {
+    type: 'bar',
+    data: {
+      labels: timelineLabels,
+      datasets: [{
+        label: 'Total da Fatura / Comprometido (R$)',
+        data: timelineData,
+        backgroundColor: bgColors,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const labelMonth = context.label;
+              const prefix = (labelMonth === '07/2026' || labelMonth === '08/2026') ? 'Fatura Fechada: ' : 'Parcelas Fixas Futuras: ';
+              return prefix + formatBRL(context.raw);
             }
-
-            const ctx = document.getElementById('subChart').getContext('2d');
-            subChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Gasto (R$)',
-                        data: values,
-                        backgroundColor: bgColors,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: { grid: { color: '#243049' }, ticks: { color: '#94a3b8' } },
-                        y: { 
-                            grid: { color: '#243049' }, 
-                            ticks: { 
-                                color: '#94a3b8',
-                                callback: value => 'R$ ' + value.toLocaleString('pt-BR')
-                            } 
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: context => 'Total: ' + brlFormatter.format(context.raw)
-                            }
-                        }
-                    }
-                }
-            });
+          }
         }
-
-        function renderTable(data) {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            
-            document.getElementById('tableTitle').textContent = selectedCategory === 'TODAS'
-                ? '🛒 Todos os Itens Registrados'
-                : '🛒 Itens Filtrados: ' + selectedCategory;
-                
-            document.getElementById('tableCount').textContent = '(' + data.length + ' de ' + rawData.length + ' itens)';
-
-            data.forEach(r => {
-                const tr = document.createElement('tr');
-                const bClass = badgeClasses[r.categoria_macro] || 'badge-merc';
-                tr.innerHTML = `
-                    <td>${r.id_item}</td>
-                    <td>${r.data}</td>
-                    <td>${r.estabelecimento}</td>
-                    <td><strong>${r.corte_padronizado}</strong></td>
-                    <td><span class="badge ${bClass}">${r.categoria_macro}</span></td>
-                    <td>${r.subcategoria}</td>
-                    <td>${numFormatter.format(r.quantidade)} ${r.unidade}</td>
-                    <td>${brlFormatter.format(r.preco_unitario)}</td>
-                    <td style="font-weight: 600;">${brlFormatter.format(r.valor_total)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+      },
+      scales: {
+        x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+        y: {
+          ticks: {
+            color: '#94a3b8',
+            callback: function(value) { return 'R$ ' + value; }
+          },
+          grid: { color: '#334155' }
         }
+      }
+    }
+  });
 
-        window.onload = init;
-    </script>
+  // Gráfico Donut de Categorias
+  catChart = new Chart(catCtx, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(catData).length > 0 ? Object.keys(catData) : ['Sem dados'],
+      datasets: [{
+        data: Object.keys(catData).length > 0 ? Object.values(catData) : [1],
+        backgroundColor: Object.keys(catData).length > 0 ? ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'] : ['#334155'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 10 } }
+      }
+    }
+  });
+
+  // Gráfico de Barras de Cartões
+  cardChart = new Chart(cardCtx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(cardData),
+      datasets: [{
+        label: 'Total (R$)',
+        data: Object.values(cardData),
+        backgroundColor: '#3b82f6',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+      }
+    }
+  });
+}
+
+initFilters();
+renderDashboard();
+</script>
+
 </body>
 </html>
