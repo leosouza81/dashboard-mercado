@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Consumo Doméstico & Despesas</title>
+    <title>Dashboard Mercado</title>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- PapaParse para carregar CSV diretamente -->
@@ -126,7 +126,7 @@
 
     <div class="header">
         <div>
-            <h1>Dashboard de Consumo Doméstico & Despesas</h1>
+            <h1>Dashboard Mercado</h1>
             <p>Análise de Gastos e Variação Histórica de Preços (Mínimo, Médio e Pago)</p>
         </div>
         <div style="text-align: right;">
@@ -250,7 +250,19 @@
     </div>
     <div class="table-card">
         <table>
-            <thead id="tableHead"></thead>
+            <thead id="tableHead">
+                <tr>
+                    <th>#</th>
+                    <th>Data</th>
+                    <th>Estabelecimento</th>
+                    <th>Produto Padronizado</th>
+                    <th>Categoria</th>
+                    <th>Subcategoria</th>
+                    <th>Qtd</th>
+                    <th>Preço Un.</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
@@ -312,8 +324,8 @@
         };
 
         function parseCurrencyBR(val) {
-            if (!val && val !== 0) return 0;
-            if (typeof val === 'number') return val;
+            if (val === null || val === undefined || val === '') return 0;
+            if (typeof val === 'number') return isNaN(val) ? 0 : val;
             let str = String(val).trim().replace('R$', '').replace(/\s/g, '');
             if (str.includes(',') && str.includes('.')) {
                 str = str.replace(/\./g, '').replace(',', '.');
@@ -323,16 +335,23 @@
             return parseFloat(str) || 0;
         }
 
+        function getField(row, possibleNames) {
+            for (let name of possibleNames) {
+                if (row[name] !== undefined && row[name] !== null) return row[name];
+            }
+            return '';
+        }
+
         function extractMonthYear(dateStr) {
             if (!dateStr) return { key: 'Outros', label: 'Outros', date: new Date(0) };
-            const cleanDate = dateStr.split(' ')[0];
+            const cleanDate = String(dateStr).split(' ')[0];
             const parts = cleanDate.split('/');
             if (parts.length === 3) {
-                const day = parseInt(parts[0], 10);
-                const month = parseInt(parts[1], 10);
-                const year = parseInt(parts[2], 10);
+                const day = parseInt(parts[0], 10) || 1;
+                const month = parseInt(parts[1], 10) || 1;
+                const year = parseInt(parts[2], 10) || 2026;
                 const monthPadded = String(month).padStart(2, '0');
-                const label = `${monthNames[month - 1]} / ${year}`;
+                const label = `${monthNames[month - 1] || 'Mês ' + month} / ${year}`;
                 return {
                     key: `${monthPadded}/${year}`,
                     label: label,
@@ -344,8 +363,12 @@
 
         function computePriceBenchmarks(items) {
             const map = {};
+            if (!items || !items.length) return map;
+
             items.forEach(r => {
-                const key = `${r.corte_padronizado}__${r.unidade}`;
+                const prodName = r.corte_padronizado || r.descricao_original || 'Item';
+                const un = r.unidade || 'UN';
+                const key = `${prodName}__${un}`;
                 if (!map[key]) {
                     map[key] = { prices: [] };
                 }
@@ -372,7 +395,7 @@
         }
 
         function loadDataFromSheets() {
-            if (!GOOGLE_SHEETS_ITENS_CSV_URL.startsWith('http')) {
+            if (!GOOGLE_SHEETS_ITENS_CSV_URL || !GOOGLE_SHEETS_ITENS_CSV_URL.startsWith('http')) {
                 console.warn('URL do Google Sheets não configurada.');
                 document.getElementById('loadingOverlay').style.display = 'none';
                 document.getElementById('lastUpdateText').textContent = 'Modo Local (Configure o Link do Sheets)';
@@ -384,56 +407,72 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    rawData = results.data.map((r, i) => {
-                        const dateInfo = extractMonthYear(r.data || r.data_compra);
-                        return {
-                            id_item: r.id_item || (i + 1),
-                            id_compra: r.id_compra,
-                            data: r.data || r.data_compra,
-                            month_key: dateInfo.key,
-                            month_label: dateInfo.label,
-                            estabelecimento: r.estabelecimento,
-                            descricao_original: r.descricao_original,
-                            categoria_macro: r.categoria_macro,
-                            subcategoria: r.subcategoria,
-                            corte_padronizado: r.corte_padronizado,
-                            quantidade: parseCurrencyBR(r.quantidade),
-                            unidade: r.unidade,
-                            preco_unitario: parseCurrencyBR(r.preco_unitario),
-                            desconto: parseCurrencyBR(r.desconto),
-                            valor_total: parseCurrencyBR(r.valor_total)
-                        };
-                    });
+                    try {
+                        rawData = results.data.map((r, i) => {
+                            const dataStr = getField(r, ['data', 'data_compra', 'Data', 'DATA']);
+                            const dateInfo = extractMonthYear(dataStr);
+                            const prodName = getField(r, ['corte_padronizado', 'produto_padronizado', 'produto_canonico', 'descricao_original', 'PRODUTO', 'descricao']);
+                            const precoUnit = parseCurrencyBR(getField(r, ['preco_unitario', 'preco_unit', 'valor_unitario', 'PREÇO_UNITARIO', 'preco']));
+                            const qtd = parseCurrencyBR(getField(r, ['quantidade', 'qtd', 'QUANTIDADE', 'quant'])) || 1;
+                            const total = parseCurrencyBR(getField(r, ['valor_total', 'total', 'VALOR_TOTAL'])) || (precoUnit * qtd);
 
-                    priceBenchmarkMap = computePriceBenchmarks(rawData);
+                            return {
+                                id_item: getField(r, ['id_item', 'id', 'ID']) || (i + 1),
+                                id_compra: getField(r, ['id_compra', 'ID_COMPRA']) || 1,
+                                data: dataStr || '20/08/2026',
+                                month_key: dateInfo.key,
+                                month_label: dateInfo.label,
+                                estabelecimento: getField(r, ['estabelecimento', 'local', 'ESTABELECIMENTO']) || 'Geral',
+                                descricao_original: getField(r, ['descricao_original', 'descricao', 'DESCRICAO_ORIGINAL']) || prodName,
+                                categoria_macro: getField(r, ['categoria_macro', 'categoria', 'CATEGORIA_MACRO']) || 'Outros',
+                                subcategoria: getField(r, ['subcategoria', 'SUBCATEGORIA']) || 'Geral',
+                                corte_padronizado: prodName || 'Item',
+                                quantidade: qtd,
+                                unidade: getField(r, ['unidade', 'UNIDADE', 'un']) || 'UN',
+                                preco_unitario: precoUnit,
+                                desconto: parseCurrencyBR(getField(r, ['desconto', 'DESCONTO'])),
+                                valor_total: total
+                            };
+                        });
 
-                    Papa.parse(GOOGLE_SHEETS_COMPRAS_CSV_URL, {
-                        download: true,
-                        header: true,
-                        skipEmptyLines: true,
-                        complete: function(compResults) {
-                            comprasData = compResults.data.map(c => {
-                                const dateInfo = extractMonthYear(c.data_compra);
-                                return {
-                                    id_compra: c.id_compra,
-                                    data_compra: c.data_compra,
-                                    month_key: dateInfo.key,
-                                    estabelecimento: c.estabelecimento,
-                                    total_skus: c.total_skus || c.total_itens,
-                                    valor_bruto: parseCurrencyBR(c.valor_bruto),
-                                    desconto: parseCurrencyBR(c.desconto),
-                                    valor_liquido: parseCurrencyBR(c.valor_liquido)
-                                };
-                            });
+                        priceBenchmarkMap = computePriceBenchmarks(rawData);
 
-                            document.getElementById('loadingOverlay').style.display = 'none';
-                            document.getElementById('lastUpdateText').textContent = 'Última Leitura: ' + new Date().toLocaleDateString('pt-BR');
-                            init();
-                        },
-                        error: function(err) {
-                            showError(err);
-                        }
-                    });
+                        Papa.parse(GOOGLE_SHEETS_COMPRAS_CSV_URL, {
+                            download: true,
+                            header: true,
+                            skipEmptyLines: true,
+                            complete: function(compResults) {
+                                try {
+                                    comprasData = compResults.data.map(c => {
+                                        const dt = getField(c, ['data_compra', 'data', 'Data']);
+                                        const dateInfo = extractMonthYear(dt);
+                                        return {
+                                            id_compra: getField(c, ['id_compra', 'id', 'ID']) || 1,
+                                            data_compra: dt || '',
+                                            month_key: dateInfo.key,
+                                            estabelecimento: getField(c, ['estabelecimento', 'local', 'ESTABELECIMENTO']) || 'Geral',
+                                            total_skus: getField(c, ['total_skus', 'total_itens', 'qtd_linhas', 'TOTAL_SKUS']) || 1,
+                                            valor_bruto: parseCurrencyBR(getField(c, ['valor_bruto', 'VALOR_BRUTO'])),
+                                            desconto: parseCurrencyBR(getField(c, ['desconto', 'DESCONTO'])),
+                                            valor_liquido: parseCurrencyBR(getField(c, ['valor_liquido', 'total_pago', 'VALOR_LIQUIDO']))
+                                        };
+                                    });
+                                } catch (e) {
+                                    console.warn('Erro ao parsear compras:', e);
+                                }
+
+                                document.getElementById('loadingOverlay').style.display = 'none';
+                                document.getElementById('lastUpdateText').textContent = 'Última Leitura: ' + new Date().toLocaleDateString('pt-BR');
+                                init();
+                            },
+                            error: function(err) {
+                                document.getElementById('loadingOverlay').style.display = 'none';
+                                init();
+                            }
+                        });
+                    } catch (err) {
+                        showError(err);
+                    }
                 },
                 error: function(err) {
                     showError(err);
@@ -463,8 +502,9 @@
         }
 
         function toggleDropdown(panelId, event) {
-            event.stopPropagation();
+            if (event) event.stopPropagation();
             const panel = document.getElementById(panelId);
+            if (!panel) return;
             const isOpen = panel.classList.contains('open');
             document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('open'));
             if (!isOpen) panel.classList.add('open');
@@ -489,6 +529,7 @@
 
         function setupMonthControls() {
             const select = document.getElementById('monthSelect');
+            if (!select) return;
             select.innerHTML = '<option value="TODOS">Todos os Meses</option>';
 
             const monthMap = {};
@@ -523,6 +564,7 @@
 
         function buildCategoryDropdown() {
             const panel = document.getElementById('catPanel');
+            if (!panel) return;
             panel.innerHTML = '';
 
             const dateFiltered = selectedMonth === 'TODOS' 
@@ -559,6 +601,7 @@
 
         function buildSubcategoryDropdown() {
             const panel = document.getElementById('subPanel');
+            if (!panel) return;
             panel.innerHTML = '';
 
             const dateFiltered = selectedMonth === 'TODOS' 
@@ -603,6 +646,7 @@
 
         function updateDropdownBtnLabel(btnId, set, defaultName) {
             const btn = document.getElementById(btnId);
+            if (!btn) return;
             if (set.size === 0) {
                 btn.textContent = `Todas as ${defaultName}`;
             } else if (set.size === 1) {
@@ -636,7 +680,8 @@
             selectedMonth = 'TODOS';
             selectedCategories.clear();
             selectedSubcategories.clear();
-            document.getElementById('monthSelect').value = 'TODOS';
+            const mSel = document.getElementById('monthSelect');
+            if (mSel) mSel.value = 'TODOS';
             buildCategoryDropdown();
             buildSubcategoryDropdown();
             updateDashboard();
@@ -644,6 +689,7 @@
 
         function updateTagsBar() {
             const tagsList = document.getElementById('tagsList');
+            if (!tagsList) return;
             tagsList.innerHTML = '';
 
             const hasMonth = selectedMonth !== 'TODOS';
@@ -656,7 +702,8 @@
             }
 
             if (hasMonth) {
-                const mLabel = document.getElementById('monthSelect').selectedOptions[0].text;
+                const mSel = document.getElementById('monthSelect');
+                const mLabel = mSel && mSel.selectedOptions[0] ? mSel.selectedOptions[0].text : selectedMonth;
                 const pill = document.createElement('div');
                 pill.className = 'tag-pill tag-pill-cat';
                 pill.innerHTML = `Mês: ${mLabel} <span class="remove-btn" onclick="onMonthChange('TODOS')">✕</span>`;
@@ -679,11 +726,13 @@
         }
 
         function updateDashboard() {
+            if (!rawData) return;
+
             const monthFiltered = selectedMonth === 'TODOS'
                 ? rawData
                 : rawData.filter(d => d.month_key === selectedMonth);
 
-            const totalGastoPeriodo = monthFiltered.reduce((acc, it) => acc + it.valor_total, 0);
+            const totalGastoPeriodo = monthFiltered.reduce((acc, it) => acc + (it.valor_total || 0), 0);
 
             const catFiltered = selectedCategories.size === 0
                 ? monthFiltered
@@ -693,11 +742,11 @@
                 ? catFiltered
                 : catFiltered.filter(d => selectedSubcategories.has(d.subcategoria));
 
-            const gastoFiltrado = finalFiltered.reduce((acc, it) => acc + it.valor_total, 0);
+            const gastoFiltrado = finalFiltered.reduce((acc, it) => acc + (it.valor_total || 0), 0);
             const qtdCompras = new Set(finalFiltered.map(d => d.id_compra)).size || 1;
             const ticketMedio = gastoFiltrado / qtdCompras;
             const share = totalGastoPeriodo > 0 ? (gastoFiltrado / totalGastoPeriodo) * 100 : 0;
-            const volumeTotal = finalFiltered.reduce((acc, it) => acc + it.quantidade, 0);
+            const volumeTotal = finalFiltered.reduce((acc, it) => acc + (it.quantidade || 0), 0);
 
             document.getElementById('kpiGasto').textContent = brlFormatter.format(gastoFiltrado);
             document.getElementById('kpiTicket').textContent = brlFormatter.format(ticketMedio);
@@ -716,7 +765,7 @@
             const catMap = {};
             data.forEach(d => {
                 if (!d.categoria_macro) return;
-                catMap[d.categoria_macro] = (catMap[d.categoria_macro] || 0) + d.valor_total;
+                catMap[d.categoria_macro] = (catMap[d.categoria_macro] || 0) + (d.valor_total || 0);
             });
 
             const labels = Object.keys(catMap).sort((a, b) => catMap[b] - catMap[a]);
@@ -731,7 +780,9 @@
 
             if (catChartInstance) catChartInstance.destroy();
 
-            const ctx = document.getElementById('catChart').getContext('2d');
+            const canvas = document.getElementById('catChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             catChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -770,7 +821,7 @@
             const subMap = {};
             data.forEach(d => {
                 const key = d.subcategoria || 'Geral';
-                subMap[key] = (subMap[key] || 0) + d.valor_total;
+                subMap[key] = (subMap[key] || 0) + (d.valor_total || 0);
             });
 
             const labels = Object.keys(subMap).sort((a, b) => subMap[b] - subMap[a]);
@@ -792,11 +843,14 @@
                 titleText = `Subcategorias (${selectedCategories.size} Categorias Selecionadas)`;
             }
 
-            document.getElementById('barChartTitle').textContent = titleText;
+            const titleEl = document.getElementById('barChartTitle');
+            if (titleEl) titleEl.textContent = titleText;
 
             if (subChartInstance) subChartInstance.destroy();
 
-            const ctx = document.getElementById('subChart').getContext('2d');
+            const canvas = document.getElementById('subChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             subChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -841,6 +895,7 @@
 
         function renderComprasTable() {
             const tbody = document.getElementById('comprasTableBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
             
             const filteredCompras = selectedMonth === 'TODOS'
@@ -854,9 +909,9 @@
                     <td>${c.data_compra}</td>
                     <td>${c.estabelecimento}</td>
                     <td>${c.total_skus} SKUs</td>
-                    <td>${brlFormatter.format(c.valor_bruto)}</td>
-                    <td style="color: #f87171;">${c.desconto > 0 ? '-' + brlFormatter.format(c.desconto) : 'R$ 0,00'}</td>
-                    <td><strong>${brlFormatter.format(c.valor_liquido)}</strong></td>
+                    <td>${brlFormatter.format(c.valor_bruto || 0)}</td>
+                    <td style="color: #f87171;">${(c.desconto || 0) > 0 ? '-' + brlFormatter.format(c.desconto) : 'R$ 0,00'}</td>
+                    <td><strong>${brlFormatter.format(c.valor_liquido || 0)}</strong></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -865,11 +920,13 @@
         function renderTable(data) {
             const thead = document.getElementById('tableHead');
             const tbody = document.getElementById('tableBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
             
             let titleText = '🛒 Itens Registrados';
             if (selectedMonth !== 'TODOS') {
-                const mLabel = document.getElementById('monthSelect').selectedOptions[0].text;
+                const mSel = document.getElementById('monthSelect');
+                const mLabel = mSel && mSel.selectedOptions[0] ? mSel.selectedOptions[0].text : selectedMonth;
                 titleText += ` [${mLabel}]`;
             }
             if (selectedCategories.size > 0) {
@@ -879,39 +936,49 @@
                 titleText += ` > (${Array.from(selectedSubcategories).join(' + ')})`;
             }
 
-            document.getElementById('tableTitle').textContent = titleText;
-            document.getElementById('tableCount').textContent = '(' + data.length + ' registros)';
+            const titleEl = document.getElementById('tableTitle');
+            if (titleEl) titleEl.textContent = titleText;
+            
+            const countEl = document.getElementById('tableCount');
+            if (countEl) countEl.textContent = '(' + (data ? data.length : 0) + ' registros)';
 
-            if (showBenchmarkMode) {
-                thead.innerHTML = `
-                    <tr>
-                        <th>#</th>
-                        <th>Data</th>
-                        <th>Estabelecimento</th>
-                        <th>Produto Padronizado</th>
-                        <th>Categoria</th>
-                        <th>Qtd</th>
-                        <th>Preço Pago (Un.)</th>
-                        <th>Média Histórica</th>
-                        <th>Menor Preço Já Visto</th>
-                        <th>Status / Variação</th>
-                        <th>Total</th>
-                    </tr>
-                `;
-            } else {
-                thead.innerHTML = `
-                    <tr>
-                        <th>#</th>
-                        <th>Data</th>
-                        <th>Estabelecimento</th>
-                        <th>Produto Padronizado</th>
-                        <th>Categoria</th>
-                        <th>Subcategoria</th>
-                        <th>Qtd</th>
-                        <th>Preço Un.</th>
-                        <th>Total</th>
-                    </tr>
-                `;
+            if (thead) {
+                if (showBenchmarkMode) {
+                    thead.innerHTML = `
+                        <tr>
+                            <th>#</th>
+                            <th>Data</th>
+                            <th>Estabelecimento</th>
+                            <th>Produto Padronizado</th>
+                            <th>Categoria</th>
+                            <th>Qtd</th>
+                            <th>Preço Pago (Un.)</th>
+                            <th>Média Histórica</th>
+                            <th>Menor Preço Já Visto</th>
+                            <th>Status / Variação</th>
+                            <th>Total</th>
+                        </tr>
+                    `;
+                } else {
+                    thead.innerHTML = `
+                        <tr>
+                            <th>#</th>
+                            <th>Data</th>
+                            <th>Estabelecimento</th>
+                            <th>Produto Padronizado</th>
+                            <th>Categoria</th>
+                            <th>Subcategoria</th>
+                            <th>Qtd</th>
+                            <th>Preço Un.</th>
+                            <th>Total</th>
+                        </tr>
+                    `;
+                }
+            }
+
+            if (!data || !data.length) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color: var(--text-muted); padding: 20px;">Nenhum item encontrado para o filtro selecionado.</td></tr>';
+                return;
             }
 
             data.forEach(r => {
@@ -919,13 +986,15 @@
                 const bClass = badgeClasses[r.categoria_macro] || 'badge-merc';
                 
                 if (showBenchmarkMode) {
-                    const benchKey = `${r.corte_padronizado}__${r.unidade}`;
+                    const prodName = r.corte_padronizado || r.descricao_original || 'Item';
+                    const un = r.unidade || 'UN';
+                    const benchKey = `${prodName}__${un}`;
                     const stats = priceBenchmarkMap[benchKey] || { min: r.preco_unitario, avg: r.preco_unitario, count: 1 };
                     
                     let badgeStatus = '';
-                    if (r.preco_unitario <= stats.min + 0.001) {
+                    if (r.preco_unitario <= (stats.min || 0) + 0.001) {
                         badgeStatus = `<span class="pill-price-best">⭐ Menor Preço</span>`;
-                    } else if (r.preco_unitario > stats.avg * 1.05) {
+                    } else if (stats.avg > 0 && r.preco_unitario > stats.avg * 1.05) {
                         const diffPerc = ((r.preco_unitario - stats.avg) / stats.avg) * 100;
                         badgeStatus = `<span class="pill-price-high">+${diffPerc.toFixed(0)}% vs Média</span>`;
                     } else {
@@ -936,26 +1005,27 @@
                         <td>${r.id_item}</td>
                         <td>${r.data}</td>
                         <td>${r.estabelecimento}</td>
-                        <td><strong>${r.corte_padronizado}</strong></td>
+                        <td><strong>${prodName}</strong></td>
                         <td><span class="badge ${bClass}">${r.categoria_macro}</span></td>
-                        <td>${numFormatter.format(r.quantidade)} ${r.unidade}</td>
-                        <td style="font-weight: 700; color: #fff;">${brlFormatter.format(r.preco_unitario)}</td>
-                        <td style="color: #94a3b8;">${brlFormatter.format(stats.avg)}</td>
-                        <td style="color: #34d399; font-weight: 600;">${brlFormatter.format(stats.min)}</td>
+                        <td>${numFormatter.format(r.quantidade || 1)} ${un}</td>
+                        <td style="font-weight: 700; color: #fff;">${brlFormatter.format(r.preco_unitario || 0)}</td>
+                        <td style="color: #94a3b8;">${brlFormatter.format(stats.avg || 0)}</td>
+                        <td style="color: #34d399; font-weight: 600;">${brlFormatter.format(stats.min || 0)}</td>
                         <td>${badgeStatus}</td>
-                        <td style="font-weight: 600;">${brlFormatter.format(r.valor_total)}</td>
+                        <td style="font-weight: 600;">${brlFormatter.format(r.valor_total || 0)}</td>
                     `;
                 } else {
+                    const prodName = r.corte_padronizado || r.descricao_original || 'Item';
                     tr.innerHTML = `
                         <td>${r.id_item}</td>
                         <td>${r.data}</td>
                         <td>${r.estabelecimento}</td>
-                        <td><strong>${r.corte_padronizado}</strong></td>
+                        <td><strong>${prodName}</strong></td>
                         <td><span class="badge ${bClass}">${r.categoria_macro}</span></td>
                         <td>${r.subcategoria}</td>
-                        <td>${numFormatter.format(r.quantidade)} ${r.unidade}</td>
-                        <td>${brlFormatter.format(r.preco_unitario)}</td>
-                        <td style="font-weight: 600;">${brlFormatter.format(r.valor_total)}</td>
+                        <td>${numFormatter.format(r.quantidade || 1)} ${r.unidade || 'UN'}</td>
+                        <td>${brlFormatter.format(r.preco_unitario || 0)}</td>
+                        <td style="font-weight: 600;">${brlFormatter.format(r.valor_total || 0)}</td>
                     `;
                 }
                 tbody.appendChild(tr);
