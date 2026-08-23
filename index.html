@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Mercado</title>
+    <title>Painel de Consumo Doméstico & Despesas</title>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- PapaParse para carregar CSV diretamente -->
@@ -34,7 +34,7 @@
         .status-dot { width: 8px; height: 8px; background: #34d399; border-radius: 50%; display: inline-block; }
         
         /* Barra de Controle Limpa */
-        .control-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; background: var(--card-bg); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
+        .control-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; background: var(--card-bg); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
         .filter-group { display: flex; align-items: center; gap: 8px; position: relative; }
         .filter-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         
@@ -59,6 +59,13 @@
         .dropdown-item:hover { background: #1e293b; color: #fff; }
         .dropdown-item input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
 
+        /* Botão Toggle de Benchmark de Preços */
+        .btn-benchmark {
+            display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #1e293b; color: var(--text-muted); transition: all 0.2s;
+        }
+        .btn-benchmark:hover { border-color: var(--accent); color: #fff; }
+        .btn-benchmark.active { background: rgba(56, 189, 248, 0.15); border-color: var(--accent); color: var(--accent); }
+
         /* Barra de Tags Ativas */
         .active-tags-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(30, 41, 59, 0.4); padding: 8px 14px; border-radius: 8px; border: 1px dashed var(--border); min-height: 42px; }
         .tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; }
@@ -79,12 +86,12 @@
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px; }
         .chart-card h3 { font-size: 15px; font-weight: 600; color: #e2e8f0; }
 
-        .section-title { font-size: 18px; font-weight: 600; margin: 28px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+        .section-title { font-size: 18px; font-weight: 600; margin: 28px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         
-        .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto; max-height: 480px; }
+        .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto; max-height: 520px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
-        th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 10px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; position: sticky; top: 0; background: var(--card-bg); z-index: 10; }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #cbd5e1; }
+        th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 10px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; position: sticky; top: 0; background: var(--card-bg); z-index: 10; white-space: nowrap; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #cbd5e1; white-space: nowrap; }
         tr:hover { background-color: rgba(255,255,255,0.02); }
         
         .badge { display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 11px; font-weight: 600; }
@@ -98,6 +105,11 @@
         .badge-horti { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
         .badge-farma { background: rgba(45, 212, 191, 0.18); color: #2dd4bf; }
         .badge-rua { background: rgba(245, 158, 11, 0.18); color: #f59e0b; }
+
+        /* Badges de Comparação de Preço */
+        .pill-price-best { background: rgba(52, 211, 153, 0.15); color: #34d399; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .pill-price-avg { background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .pill-price-high { background: rgba(248, 113, 113, 0.15); color: #f87171; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
 
         #loadingOverlay {
             position: fixed; inset: 0; background: rgba(11, 15, 25, 0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
@@ -114,8 +126,8 @@
 
     <div class="header">
         <div>
-            <h1>Dashboard Mercado</h1>
-            <p>Filtros Compactos por Listas Suspensas • Tempo Real</p>
+            <h1>Dashboard de Consumo Doméstico & Despesas</h1>
+            <p>Análise de Gastos e Variação Histórica de Preços (Mínimo, Médio e Pago)</p>
         </div>
         <div style="text-align: right;">
             <div class="status-badge"><span class="status-dot"></span> Sincronizado via Nuvem</div>
@@ -123,7 +135,7 @@
         </div>
     </div>
 
-    <!-- Barra de Filtros Compacta e Limpa com Listas Suspensas -->
+    <!-- Barra de Filtros Compacta -->
     <div class="control-bar">
         <!-- 1. Mês -->
         <div class="filter-group">
@@ -133,7 +145,7 @@
             </select>
         </div>
 
-        <!-- 2. Dropdown de Categorias Macro -->
+        <!-- 2. Dropdown Categorias -->
         <div class="filter-group">
             <span class="filter-label">🏷️ Categorias:</span>
             <button type="button" class="dropdown-btn" id="catDropdownBtn" onclick="toggleDropdown('catPanel', event)">
@@ -142,7 +154,7 @@
             <div class="dropdown-panel" id="catPanel"></div>
         </div>
 
-        <!-- 3. Dropdown de Subcategorias -->
+        <!-- 3. Dropdown Subcategorias -->
         <div class="filter-group">
             <span class="filter-label">🔍 Subcategorias:</span>
             <button type="button" class="dropdown-btn" id="subDropdownBtn" onclick="toggleDropdown('subPanel', event)">
@@ -150,6 +162,11 @@
             </button>
             <div class="dropdown-panel" id="subPanel"></div>
         </div>
+
+        <!-- 4. Botão Toggle de Análise de Preços -->
+        <button type="button" class="btn-benchmark" id="btnBenchmark" onclick="toggleBenchmarkView()">
+            📊 Variação de Preços (Mín / Méd)
+        </button>
 
         <button class="btn-reset" onclick="resetAllFilters()">🧹 Limpar Filtros</button>
     </div>
@@ -221,26 +238,19 @@
         </table>
     </div>
 
-    <!-- Tabela Geral Filtrável -->
+    <!-- Tabela Geral Filtrável (com Modo Comparativo de Preços) -->
     <div class="section-title">
-        <span id="tableTitle">🛒 Itens Registrados</span>
-        <span style="font-size: 13px; color: var(--text-muted);" id="tableCount"></span>
+        <div>
+            <span id="tableTitle">🛒 Itens Registrados</span>
+            <span style="font-size: 13px; color: var(--text-muted);" id="tableCount"></span>
+        </div>
+        <span id="benchmarkStatusNote" style="font-size: 12px; color: var(--accent); font-weight: 500; display: none;">
+            ✨ Modo Variação de Preços Ativo: comparando com o histórico geral
+        </span>
     </div>
     <div class="table-card">
         <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Data</th>
-                    <th>Estabelecimento</th>
-                    <th>Produto Padronizado</th>
-                    <th>Categoria</th>
-                    <th>Subcategoria</th>
-                    <th>Qtd</th>
-                    <th>Preço Un.</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
+            <thead id="tableHead"></thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
@@ -250,15 +260,17 @@
         // CONFIGURAÇÃO DO GOOGLE SHEETS
         // Cole abaixo as URLs CSV publicadas das suas abas
         // =========================================================================
-        const GOOGLE_SHEETS_ITENS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1163794601&single=true&output=csv';
-        const GOOGLE_SHEETS_COMPRAS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1241219982&single=true&output=csv';
+        const GOOGLE_SHEETS_ITENS_CSV_URL = 'COLE_AQUI_A_URL_CSV_DA_ABA_ITENS_COMPRA';
+        const GOOGLE_SHEETS_COMPRAS_CSV_URL = 'COLE_AQUI_A_URL_CSV_DA_ABA_COMPRAS';
 
         let rawData = [];
         let comprasData = [];
-        let selectedMonth = 'TODOS';
+        let priceBenchmarkMap = {};
         
+        let selectedMonth = 'TODOS';
         let selectedCategories = new Set();
         let selectedSubcategories = new Set();
+        let showBenchmarkMode = false;
         
         let catChartInstance = null;
         let subChartInstance = null;
@@ -281,7 +293,9 @@
             "Alimentação Fora": "#f59e0b",
             "Laticínios": "#38bdf8",
             "Padaria/Matinais": "#fb923c",
-            "Bebidas": "#f472b6"
+            "Bebidas": "#f472b6",
+            "Casa & Decoração": "#818cf8",
+            "Vestuário & Acessórios": "#f43f5e"
         };
 
         const badgeClasses = {
@@ -298,7 +312,7 @@
         };
 
         function parseCurrencyBR(val) {
-            if (!val) return 0;
+            if (!val && val !== 0) return 0;
             if (typeof val === 'number') return val;
             let str = String(val).trim().replace('R$', '').replace(/\s/g, '');
             if (str.includes(',') && str.includes('.')) {
@@ -326,6 +340,35 @@
                 };
             }
             return { key: 'Outros', label: 'Outros', date: new Date(0) };
+        }
+
+        function computePriceBenchmarks(items) {
+            const map = {};
+            items.forEach(r => {
+                const key = `${r.corte_padronizado}__${r.unidade}`;
+                if (!map[key]) {
+                    map[key] = { prices: [] };
+                }
+                if (r.preco_unitario > 0) {
+                    map[key].prices.push(r.preco_unitario);
+                }
+            });
+
+            Object.keys(map).forEach(k => {
+                const arr = map[k].prices;
+                if (arr.length > 0) {
+                    map[k].min = Math.min(...arr);
+                    map[k].max = Math.max(...arr);
+                    map[k].avg = arr.reduce((a, b) => a + b, 0) / arr.length;
+                    map[k].count = arr.length;
+                } else {
+                    map[k].min = 0;
+                    map[k].max = 0;
+                    map[k].avg = 0;
+                    map[k].count = 0;
+                }
+            });
+            return map;
         }
 
         function loadDataFromSheets() {
@@ -361,6 +404,8 @@
                             valor_total: parseCurrencyBR(r.valor_total)
                         };
                     });
+
+                    priceBenchmarkMap = computePriceBenchmarks(rawData);
 
                     Papa.parse(GOOGLE_SHEETS_COMPRAS_CSV_URL, {
                         download: true,
@@ -410,7 +455,6 @@
             buildSubcategoryDropdown();
             updateDashboard();
 
-            // Fechar dropdowns ao clicar fora
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.filter-group')) {
                     document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('open'));
@@ -424,6 +468,23 @@
             const isOpen = panel.classList.contains('open');
             document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('open'));
             if (!isOpen) panel.classList.add('open');
+        }
+
+        function toggleBenchmarkView() {
+            showBenchmarkMode = !showBenchmarkMode;
+            const btn = document.getElementById('btnBenchmark');
+            const note = document.getElementById('benchmarkStatusNote');
+            
+            if (showBenchmarkMode) {
+                btn.classList.add('active');
+                btn.innerHTML = '📊 Variação de Preços: ATIVO';
+                note.style.display = 'inline-block';
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '📊 Variação de Preços (Mín / Méd)';
+                note.style.display = 'none';
+            }
+            updateDashboard();
         }
 
         function setupMonthControls() {
@@ -802,6 +863,7 @@
         }
 
         function renderTable(data) {
+            const thead = document.getElementById('tableHead');
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
@@ -820,20 +882,82 @@
             document.getElementById('tableTitle').textContent = titleText;
             document.getElementById('tableCount').textContent = '(' + data.length + ' registros)';
 
+            if (showBenchmarkMode) {
+                thead.innerHTML = `
+                    <tr>
+                        <th>#</th>
+                        <th>Data</th>
+                        <th>Estabelecimento</th>
+                        <th>Produto Padronizado</th>
+                        <th>Categoria</th>
+                        <th>Qtd</th>
+                        <th>Preço Pago (Un.)</th>
+                        <th>Média Histórica</th>
+                        <th>Menor Preço Já Visto</th>
+                        <th>Status / Variação</th>
+                        <th>Total</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th>#</th>
+                        <th>Data</th>
+                        <th>Estabelecimento</th>
+                        <th>Produto Padronizado</th>
+                        <th>Categoria</th>
+                        <th>Subcategoria</th>
+                        <th>Qtd</th>
+                        <th>Preço Un.</th>
+                        <th>Total</th>
+                    </tr>
+                `;
+            }
+
             data.forEach(r => {
                 const tr = document.createElement('tr');
                 const bClass = badgeClasses[r.categoria_macro] || 'badge-merc';
-                tr.innerHTML = `
-                    <td>${r.id_item}</td>
-                    <td>${r.data}</td>
-                    <td>${r.estabelecimento}</td>
-                    <td><strong>${r.corte_padronizado}</strong></td>
-                    <td><span class="badge ${bClass}">${r.categoria_macro}</span></td>
-                    <td>${r.subcategoria}</td>
-                    <td>${numFormatter.format(r.quantidade)} ${r.unidade}</td>
-                    <td>${brlFormatter.format(r.preco_unitario)}</td>
-                    <td style="font-weight: 600;">${brlFormatter.format(r.valor_total)}</td>
-                `;
+                
+                if (showBenchmarkMode) {
+                    const benchKey = `${r.corte_padronizado}__${r.unidade}`;
+                    const stats = priceBenchmarkMap[benchKey] || { min: r.preco_unitario, avg: r.preco_unitario, count: 1 };
+                    
+                    let badgeStatus = '';
+                    if (r.preco_unitario <= stats.min + 0.001) {
+                        badgeStatus = `<span class="pill-price-best">⭐ Menor Preço</span>`;
+                    } else if (r.preco_unitario > stats.avg * 1.05) {
+                        const diffPerc = ((r.preco_unitario - stats.avg) / stats.avg) * 100;
+                        badgeStatus = `<span class="pill-price-high">+${diffPerc.toFixed(0)}% vs Média</span>`;
+                    } else {
+                        badgeStatus = `<span class="pill-price-avg">Na Média</span>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td>${r.id_item}</td>
+                        <td>${r.data}</td>
+                        <td>${r.estabelecimento}</td>
+                        <td><strong>${r.corte_padronizado}</strong></td>
+                        <td><span class="badge ${bClass}">${r.categoria_macro}</span></td>
+                        <td>${numFormatter.format(r.quantidade)} ${r.unidade}</td>
+                        <td style="font-weight: 700; color: #fff;">${brlFormatter.format(r.preco_unitario)}</td>
+                        <td style="color: #94a3b8;">${brlFormatter.format(stats.avg)}</td>
+                        <td style="color: #34d399; font-weight: 600;">${brlFormatter.format(stats.min)}</td>
+                        <td>${badgeStatus}</td>
+                        <td style="font-weight: 600;">${brlFormatter.format(r.valor_total)}</td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td>${r.id_item}</td>
+                        <td>${r.data}</td>
+                        <td>${r.estabelecimento}</td>
+                        <td><strong>${r.corte_padronizado}</strong></td>
+                        <td><span class="badge ${bClass}">${r.categoria_macro}</span></td>
+                        <td>${r.subcategoria}</td>
+                        <td>${numFormatter.format(r.quantidade)} ${r.unidade}</td>
+                        <td>${brlFormatter.format(r.preco_unitario)}</td>
+                        <td style="font-weight: 600;">${brlFormatter.format(r.valor_total)}</td>
+                    `;
+                }
                 tbody.appendChild(tr);
             });
         }
