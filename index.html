@@ -34,7 +34,7 @@
         .status-dot { width: 8px; height: 8px; background: #34d399; border-radius: 50%; display: inline-block; }
         
         /* Barra de Controle Limpa */
-        .control-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; background: var(--card-bg); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
+        .control-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; background: var(--card-bg); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
         .filter-group { display: flex; align-items: center; gap: 8px; position: relative; }
         .filter-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         
@@ -43,7 +43,7 @@
 
         /* Dropdown customizado com checkboxes */
         .dropdown-btn {
-            background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 190px;
+            background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 180px;
         }
         .dropdown-btn:hover { border-color: var(--accent); }
         .dropdown-btn::after { content: '▾'; font-size: 11px; color: var(--text-muted); }
@@ -59,12 +59,12 @@
         .dropdown-item:hover { background: #1e293b; color: #fff; }
         .dropdown-item input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
 
-        /* Botão Toggle de Benchmark de Preços */
-        .btn-benchmark {
-            display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #1e293b; color: var(--text-muted); transition: all 0.2s;
+        /* Botões Toggle de Modo */
+        .btn-toggle-view {
+            display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #1e293b; color: var(--text-muted); transition: all 0.2s; white-space: nowrap;
         }
-        .btn-benchmark:hover { border-color: var(--accent); color: #fff; }
-        .btn-benchmark.active { background: rgba(56, 189, 248, 0.15); border-color: var(--accent); color: var(--accent); }
+        .btn-toggle-view:hover { border-color: var(--accent); color: #fff; }
+        .btn-toggle-view.active { background: rgba(56, 189, 248, 0.15); border-color: var(--accent); color: var(--accent); }
 
         /* Barra de Tags Ativas */
         .active-tags-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(30, 41, 59, 0.4); padding: 8px 14px; border-radius: 8px; border: 1px dashed var(--border); min-height: 42px; }
@@ -88,6 +88,14 @@
 
         .section-title { font-size: 18px; font-weight: 600; margin: 28px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         
+        /* Container Retrátil do Histórico por Estabelecimento */
+        #comprasSectionWrapper {
+            display: none;
+            margin-bottom: 24px;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
         .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto; max-height: 520px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
         th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 10px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; position: sticky; top: 0; background: var(--card-bg); z-index: 10; white-space: nowrap; }
@@ -127,11 +135,11 @@
     <div class="header">
         <div>
             <h1>Dashboard Mercado</h1>
-            <p>Análise de Gastos e Variação Histórica de Preços (Mínimo, Médio e Pago)</p>
+            <p>Análise de Gastos e Variação Histórica de Preços • Modo Sob Demanda</p>
         </div>
         <div style="text-align: right;">
             <div class="status-badge"><span class="status-dot"></span> Sincronizado via Nuvem</div>
-            <div style="color: var(--text-muted); font-size: 12px; margin-top: 6px;" id="lastUpdateText">Carregando...</div>
+            <div style="color: var(--text-muted); font-size: 12px; margin-top: 6px;" id="lastUpdateText">Atualizando...</div>
         </div>
     </div>
 
@@ -163,8 +171,13 @@
             <div class="dropdown-panel" id="subPanel"></div>
         </div>
 
-        <!-- 4. Botão Toggle de Análise de Preços -->
-        <button type="button" class="btn-benchmark" id="btnBenchmark" onclick="toggleBenchmarkView()">
+        <!-- 4. Botão Toggle: Histórico de Estabelecimentos (Sob Demanda) -->
+        <button type="button" class="btn-toggle-view" id="btnToggleCompras" onclick="toggleComprasView()">
+            🏢 Ver Estabelecimentos
+        </button>
+
+        <!-- 5. Botão Toggle: Variação de Preços (Sob Demanda) -->
+        <button type="button" class="btn-toggle-view" id="btnBenchmark" onclick="toggleBenchmarkView()">
             📊 Variação de Preços (Mín / Méd)
         </button>
 
@@ -219,26 +232,31 @@
         </div>
     </div>
 
-    <!-- Comparativo por Estabelecimento / Compra -->
-    <div class="section-title">🏢 Histórico por Estabelecimento / Despesa</div>
-    <div class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Data</th>
-                    <th>Estabelecimento</th>
-                    <th>Qtd Linhas</th>
-                    <th>Total Bruto</th>
-                    <th>Desconto</th>
-                    <th>Total Líquido</th>
-                </tr>
-            </thead>
-            <tbody id="comprasTableBody"></tbody>
-        </table>
+    <!-- Seção Retrátil: Histórico por Estabelecimento (Aparece ao clicar no botão) -->
+    <div id="comprasSectionWrapper">
+        <div class="section-title">
+            <span>🏢 Histórico Consolidado por Estabelecimento / Ida</span>
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">(Clique no botão acima para ocultar)</span>
+        </div>
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Data</th>
+                        <th>Estabelecimento</th>
+                        <th>Qtd Linhas</th>
+                        <th>Total Bruto</th>
+                        <th>Desconto</th>
+                        <th>Total Líquido</th>
+                    </tr>
+                </thead>
+                <tbody id="comprasTableBody"></tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- Tabela Geral Filtrável (com Modo Comparativo de Preços) -->
+    <!-- Tabela Principal: Itens Registrados -->
     <div class="section-title">
         <div>
             <span id="tableTitle">🛒 Itens Registrados</span>
@@ -273,7 +291,7 @@
         // Cole abaixo as URLs CSV publicadas das suas abas
         // =========================================================================
         const GOOGLE_SHEETS_ITENS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1163794601&single=true&output=csv';
-        const GOOGLE_SHEETS_COMPRAS_CSV_URL = 'COLE_AQUI_A_Uhttps://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1241219982&single=true&output=csv';
+        const GOOGLE_SHEETS_COMPRAS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1241219982&single=true&output=csv';
 
         let rawData = [];
         let comprasData = [];
@@ -283,6 +301,7 @@
         let selectedCategories = new Set();
         let selectedSubcategories = new Set();
         let showBenchmarkMode = false;
+        let showComprasMode = false; // Controle de visibilidade da tabela de estabelecimentos
         
         let catChartInstance = null;
         let subChartInstance = null;
@@ -337,7 +356,9 @@
 
         function getField(row, possibleNames) {
             for (let name of possibleNames) {
-                if (row[name] !== undefined && row[name] !== null) return row[name];
+                if (row[name] !== undefined && row[name] !== null && String(row[name]).trim() !== '') {
+                    return row[name];
+                }
             }
             return '';
         }
@@ -359,6 +380,37 @@
                 };
             }
             return { key: 'Outros', label: 'Outros', date: new Date(0) };
+        }
+
+        function deriveComprasFromItens(itens) {
+            const map = {};
+            itens.forEach(it => {
+                const id = it.id_compra || 1;
+                if (!map[id]) {
+                    map[id] = {
+                        id_compra: id,
+                        data_compra: it.data,
+                        month_key: it.month_key,
+                        estabelecimento: it.estabelecimento,
+                        total_skus: 0,
+                        valor_bruto: 0,
+                        desconto: 0,
+                        valor_liquido: 0
+                    };
+                }
+                map[id].total_skus += 1;
+                map[id].valor_bruto += (it.valor_total || 0) + (it.desconto || 0);
+                map[id].desconto += (it.desconto || 0);
+                map[id].valor_liquido += (it.valor_total || 0);
+            });
+
+            return Object.values(map).sort((a, b) => {
+                const [dA, mA, yA] = (a.data_compra || '').split('/').map(Number);
+                const [dB, mB, yB] = (b.data_compra || '').split('/').map(Number);
+                const timeA = new Date(yA || 2026, (mA || 1) - 1, dA || 1).getTime();
+                const timeB = new Date(yB || 2026, (mB || 1) - 1, dB || 1).getTime();
+                return timeB - timeA;
+            });
         }
 
         function computePriceBenchmarks(items) {
@@ -436,40 +488,45 @@
                         });
 
                         priceBenchmarkMap = computePriceBenchmarks(rawData);
+                        comprasData = deriveComprasFromItens(rawData);
 
-                        Papa.parse(GOOGLE_SHEETS_COMPRAS_CSV_URL, {
-                            download: true,
-                            header: true,
-                            skipEmptyLines: true,
-                            complete: function(compResults) {
-                                try {
-                                    comprasData = compResults.data.map(c => {
-                                        const dt = getField(c, ['data_compra', 'data', 'Data']);
-                                        const dateInfo = extractMonthYear(dt);
-                                        return {
-                                            id_compra: getField(c, ['id_compra', 'id', 'ID']) || 1,
-                                            data_compra: dt || '',
-                                            month_key: dateInfo.key,
-                                            estabelecimento: getField(c, ['estabelecimento', 'local', 'ESTABELECIMENTO']) || 'Geral',
-                                            total_skus: getField(c, ['total_skus', 'total_itens', 'qtd_linhas', 'TOTAL_SKUS']) || 1,
-                                            valor_bruto: parseCurrencyBR(getField(c, ['valor_bruto', 'VALOR_BRUTO'])),
-                                            desconto: parseCurrencyBR(getField(c, ['desconto', 'DESCONTO'])),
-                                            valor_liquido: parseCurrencyBR(getField(c, ['valor_liquido', 'total_pago', 'VALOR_LIQUIDO']))
-                                        };
-                                    });
-                                } catch (e) {
-                                    console.warn('Erro ao parsear compras:', e);
+                        const now = new Date();
+                        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+                        document.getElementById('lastUpdateText').textContent = 'Última Leitura: ' + now.toLocaleDateString('pt-BR') + ' às ' + timeStr;
+                        document.getElementById('loadingOverlay').style.display = 'none';
+
+                        init();
+
+                        if (GOOGLE_SHEETS_COMPRAS_CSV_URL && GOOGLE_SHEETS_COMPRAS_CSV_URL.startsWith('http')) {
+                            Papa.parse(GOOGLE_SHEETS_COMPRAS_CSV_URL, {
+                                download: true,
+                                header: true,
+                                skipEmptyLines: true,
+                                complete: function(compResults) {
+                                    if (compResults.data && compResults.data.length > 0) {
+                                        const parsedCompras = compResults.data.map(c => {
+                                            const dt = getField(c, ['data_compra', 'data', 'Data']);
+                                            const dateInfo = extractMonthYear(dt);
+                                            return {
+                                                id_compra: getField(c, ['id_compra', 'id', 'ID']) || 1,
+                                                data_compra: dt || '',
+                                                month_key: dateInfo.key,
+                                                estabelecimento: getField(c, ['estabelecimento', 'local', 'ESTABELECIMENTO']) || 'Geral',
+                                                total_skus: getField(c, ['total_skus', 'total_itens', 'qtd_linhas', 'TOTAL_SKUS']) || 1,
+                                                valor_bruto: parseCurrencyBR(getField(c, ['valor_bruto', 'VALOR_BRUTO'])),
+                                                desconto: parseCurrencyBR(getField(c, ['desconto', 'DESCONTO'])),
+                                                valor_liquido: parseCurrencyBR(getField(c, ['valor_liquido', 'total_pago', 'VALOR_LIQUIDO']))
+                                            };
+                                        }).filter(c => c.valor_liquido > 0 || c.total_skus > 0);
+
+                                        if (parsedCompras.length > 0) {
+                                            comprasData = parsedCompras;
+                                            if (showComprasMode) renderComprasTable();
+                                        }
+                                    }
                                 }
-
-                                document.getElementById('loadingOverlay').style.display = 'none';
-                                document.getElementById('lastUpdateText').textContent = 'Última Leitura: ' + new Date().toLocaleDateString('pt-BR');
-                                init();
-                            },
-                            error: function(err) {
-                                document.getElementById('loadingOverlay').style.display = 'none';
-                                init();
-                            }
-                        });
+                            });
+                        }
                     } catch (err) {
                         showError(err);
                     }
@@ -510,6 +567,25 @@
             if (!isOpen) panel.classList.add('open');
         }
 
+        // Alterna a exibição da tabela de Estabelecimentos
+        function toggleComprasView() {
+            showComprasMode = !showComprasMode;
+            const btn = document.getElementById('btnToggleCompras');
+            const wrapper = document.getElementById('comprasSectionWrapper');
+            
+            if (showComprasMode) {
+                btn.classList.add('active');
+                btn.innerHTML = '🏢 Ocultar Estabelecimentos';
+                wrapper.style.display = 'block';
+                renderComprasTable();
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '🏢 Ver Estabelecimentos';
+                wrapper.style.display = 'none';
+            }
+        }
+
+        // Alterna a exibição da variação de preços na tabela principal
         function toggleBenchmarkView() {
             showBenchmarkMode = !showBenchmarkMode;
             const btn = document.getElementById('btnBenchmark');
@@ -757,7 +833,7 @@
             updateTagsBar();
             renderCategoryPie(monthFiltered);
             renderSubcategoryBar(catFiltered);
-            renderComprasTable();
+            if (showComprasMode) renderComprasTable();
             renderTable(finalFiltered);
         }
 
@@ -901,6 +977,11 @@
             const filteredCompras = selectedMonth === 'TODOS'
                 ? comprasData
                 : comprasData.filter(c => c.month_key === selectedMonth);
+
+            if (!filteredCompras || filteredCompras.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 16px;">Nenhum registro de compra encontrado no período.</td></tr>';
+                return;
+            }
 
             filteredCompras.forEach(c => {
                 const tr = document.createElement('tr');
