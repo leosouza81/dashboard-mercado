@@ -33,24 +33,34 @@
         .status-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(52, 211, 153, 0.15); color: #34d399; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3); }
         .status-dot { width: 8px; height: 8px; background: #34d399; border-radius: 50%; display: inline-block; }
         
-        .control-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; background: var(--card-bg); padding: 14px 18px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
-        .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        /* Barra de Controle Limpa */
+        .control-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; background: var(--card-bg); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
+        .filter-group { display: flex; align-items: center; gap: 8px; position: relative; }
         .filter-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         
-        .date-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
+        .date-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
         .date-select:focus { border-color: var(--accent); }
 
-        .chips-wrapper { margin-bottom: 20px; }
-        .chips-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .chips-title { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .filter-chips-container { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 6px; flex-wrap: wrap; }
+        /* Dropdown customizado com checkboxes */
+        .dropdown-btn {
+            background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 190px;
+        }
+        .dropdown-btn:hover { border-color: var(--accent); }
+        .dropdown-btn::after { content: '▾'; font-size: 11px; color: var(--text-muted); }
         
-        .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; background: #1e293b; border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; white-space: nowrap; user-select: none; }
-        .filter-chip:hover { border-color: var(--accent); color: #fff; }
-        .filter-chip.active { background: #0284c7; color: #fff; border-color: #38bdf8; font-weight: 600; }
-        .filter-chip.sub-chip.active { background: #7c3aed; color: #fff; border-color: #a78bfa; }
+        .dropdown-panel {
+            display: none; position: absolute; top: calc(100% + 6px); left: 0; background: #151d30; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; min-width: 250px; max-height: 280px; overflow-y: auto; padding: 6px;
+        }
+        .dropdown-panel.open { display: block; }
+        
+        .dropdown-item {
+            display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #cbd5e1; transition: background 0.15s;
+        }
+        .dropdown-item:hover { background: #1e293b; color: #fff; }
+        .dropdown-item input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
 
-        .active-tags-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(30, 41, 59, 0.4); padding: 8px 14px; border-radius: 8px; border: 1px dashed var(--border); }
+        /* Barra de Tags Ativas */
+        .active-tags-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(30, 41, 59, 0.4); padding: 8px 14px; border-radius: 8px; border: 1px dashed var(--border); min-height: 42px; }
         .tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; }
         .tag-pill-cat { background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid var(--accent); }
         .tag-pill-sub { background: rgba(167, 139, 250, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
@@ -105,7 +115,7 @@
     <div class="header">
         <div>
             <h1>Dashboard de Consumo Doméstico & Despesas</h1>
-            <p>Seleção Múltipla com Somatório Combinado de Categorias e Subcategorias</p>
+            <p>Filtros Compactos por Listas Suspensas • Tempo Real</p>
         </div>
         <div style="text-align: right;">
             <div class="status-badge"><span class="status-dot"></span> Sincronizado via Nuvem</div>
@@ -113,39 +123,40 @@
         </div>
     </div>
 
-    <!-- Barra de Controle Superior: Filtros Temporais e Ações -->
+    <!-- Barra de Filtros Compacta e Limpa com Listas Suspensas -->
     <div class="control-bar">
+        <!-- 1. Mês -->
         <div class="filter-group">
-            <span class="filter-label">📅 Mês / Período:</span>
+            <span class="filter-label">📅 Período:</span>
             <select class="date-select" id="monthSelect" onchange="onMonthChange(this.value)">
                 <option value="TODOS">Todos os Meses</option>
             </select>
         </div>
 
+        <!-- 2. Dropdown de Categorias Macro -->
         <div class="filter-group">
-            <button class="btn-reset" onclick="resetAllFilters()">🧹 Limpar Todos os Filtros</button>
+            <span class="filter-label">🏷️ Categorias:</span>
+            <button type="button" class="dropdown-btn" id="catDropdownBtn" onclick="toggleDropdown('catPanel', event)">
+                Todas as Categorias
+            </button>
+            <div class="dropdown-panel" id="catPanel"></div>
         </div>
-    </div>
 
-    <!-- Seletor Múltiplo de Categorias Macro -->
-    <div class="chips-wrapper">
-        <div class="chips-header">
-            <span class="chips-title">🏷️ Categorias Macro (Clique para somar / desmarcar):</span>
+        <!-- 3. Dropdown de Subcategorias -->
+        <div class="filter-group">
+            <span class="filter-label">🔍 Subcategorias:</span>
+            <button type="button" class="dropdown-btn" id="subDropdownBtn" onclick="toggleDropdown('subPanel', event)">
+                Todas as Subcategorias
+            </button>
+            <div class="dropdown-panel" id="subPanel"></div>
         </div>
-        <div class="filter-chips-container" id="categoryChips"></div>
-    </div>
 
-    <!-- Seletor Múltiplo de Subcategorias -->
-    <div class="chips-wrapper" id="subChipsWrapper">
-        <div class="chips-header">
-            <span class="chips-title">🔍 Subcategorias (Clique para somar / desmarcar):</span>
-        </div>
-        <div class="filter-chips-container" id="subcategoryChips"></div>
+        <button class="btn-reset" onclick="resetAllFilters()">🧹 Limpar Filtros</button>
     </div>
 
     <!-- Barra de Tags Ativas -->
     <div class="active-tags-bar" id="activeTagsBar">
-        <span style="font-size: 12px; color: var(--text-muted);">Filtros Aplicados:</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Filtros Ativos:</span>
         <div id="tagsList" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
     </div>
 
@@ -178,14 +189,14 @@
         <div class="chart-card">
             <div class="chart-header">
                 <h3>Distribuição por Categoria Macro (R$)</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">(Clique na fatia para alternar seleção)</span>
+                <span style="font-size: 11px; color: var(--text-muted);">(Clique na fatia para alternar)</span>
             </div>
             <canvas id="catChart" height="230"></canvas>
         </div>
         <div class="chart-card">
             <div class="chart-header">
-                <h3 id="barChartTitle">Subcategorias Selecionadas (R$)</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">(Clique na barra para alternar seleção)</span>
+                <h3 id="barChartTitle">Subcategorias (R$)</h3>
+                <span style="font-size: 11px; color: var(--text-muted);">(Clique na barra para alternar)</span>
             </div>
             <canvas id="subChart" height="230"></canvas>
         </div>
@@ -246,7 +257,6 @@
         let comprasData = [];
         let selectedMonth = 'TODOS';
         
-        // Conjuntos para suportar MÚLTIPLAS seleções e alternância com toggle
         let selectedCategories = new Set();
         let selectedSubcategories = new Set();
         
@@ -396,9 +406,24 @@
 
         function init() {
             setupMonthControls();
-            renderCategoryChips();
-            renderSubcategoryChips();
+            buildCategoryDropdown();
+            buildSubcategoryDropdown();
             updateDashboard();
+
+            // Fechar dropdowns ao clicar fora
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.filter-group')) {
+                    document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('open'));
+                }
+            });
+        }
+
+        function toggleDropdown(panelId, event) {
+            event.stopPropagation();
+            const panel = document.getElementById(panelId);
+            const isOpen = panel.classList.contains('open');
+            document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('open'));
+            if (!isOpen) panel.classList.add('open');
         }
 
         function setupMonthControls() {
@@ -430,14 +455,14 @@
             selectedMonth = monthKey;
             selectedCategories.clear();
             selectedSubcategories.clear();
-            renderCategoryChips();
-            renderSubcategoryChips();
+            buildCategoryDropdown();
+            buildSubcategoryDropdown();
             updateDashboard();
         }
 
-        function renderCategoryChips() {
-            const container = document.getElementById('categoryChips');
-            container.innerHTML = '';
+        function buildCategoryDropdown() {
+            const panel = document.getElementById('catPanel');
+            panel.innerHTML = '';
 
             const dateFiltered = selectedMonth === 'TODOS' 
                 ? rawData 
@@ -445,26 +470,18 @@
 
             const categories = Array.from(new Set(dateFiltered.map(d => d.categoria_macro).filter(Boolean))).sort();
 
-            const allChip = document.createElement('div');
-            allChip.className = 'filter-chip' + (selectedCategories.size === 0 ? ' active' : '');
-            allChip.textContent = 'Todas as Categorias';
-            allChip.onclick = () => {
-                selectedCategories.clear();
-                selectedSubcategories.clear();
-                renderCategoryChips();
-                renderSubcategoryChips();
-                updateDashboard();
-            };
-            container.appendChild(allChip);
-
             categories.forEach(cat => {
-                const chip = document.createElement('div');
-                const isActive = selectedCategories.has(cat);
-                chip.className = 'filter-chip' + (isActive ? ' active' : '');
-                chip.textContent = cat;
-                chip.onclick = () => toggleCategory(cat);
-                container.appendChild(chip);
+                const label = document.createElement('label');
+                label.className = 'dropdown-item';
+                const isChecked = selectedCategories.has(cat);
+                label.innerHTML = `
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCategory('${cat}')">
+                    <span>${cat}</span>
+                `;
+                panel.appendChild(label);
             });
+
+            updateDropdownBtnLabel('catDropdownBtn', selectedCategories, 'Categorias');
         }
 
         function toggleCategory(cat) {
@@ -473,17 +490,15 @@
             } else {
                 selectedCategories.add(cat);
             }
-            
             cleanupSubcategories();
-            
-            renderCategoryChips();
-            renderSubcategoryChips();
+            buildCategoryDropdown();
+            buildSubcategoryDropdown();
             updateDashboard();
         }
 
-        function renderSubcategoryChips() {
-            const container = document.getElementById('subcategoryChips');
-            container.innerHTML = '';
+        function buildSubcategoryDropdown() {
+            const panel = document.getElementById('subPanel');
+            panel.innerHTML = '';
 
             const dateFiltered = selectedMonth === 'TODOS' 
                 ? rawData 
@@ -496,28 +511,23 @@
             const subcategories = Array.from(new Set(baseData.map(d => d.subcategoria).filter(Boolean))).sort();
 
             if (subcategories.length === 0) {
-                container.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); padding: 4px 0;">Nenhuma subcategoria disponível</span>';
+                panel.innerHTML = '<div style="padding: 10px; font-size: 12px; color: var(--text-muted);">Nenhuma subcategoria disponível</div>';
+                updateDropdownBtnLabel('subDropdownBtn', selectedSubcategories, 'Subcategorias');
                 return;
             }
 
-            const allSubChip = document.createElement('div');
-            allSubChip.className = 'filter-chip sub-chip' + (selectedSubcategories.size === 0 ? ' active' : '');
-            allSubChip.textContent = 'Todas as Subcategorias';
-            allSubChip.onclick = () => {
-                selectedSubcategories.clear();
-                renderSubcategoryChips();
-                updateDashboard();
-            };
-            container.appendChild(allSubChip);
-
             subcategories.forEach(sub => {
-                const chip = document.createElement('div');
-                const isActive = selectedSubcategories.has(sub);
-                chip.className = 'filter-chip sub-chip' + (isActive ? ' active' : '');
-                chip.textContent = sub;
-                chip.onclick = () => toggleSubcategory(sub);
-                container.appendChild(chip);
+                const label = document.createElement('label');
+                label.className = 'dropdown-item';
+                const isChecked = selectedSubcategories.has(sub);
+                label.innerHTML = `
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSubcategory('${sub}')">
+                    <span>${sub}</span>
+                `;
+                panel.appendChild(label);
             });
+
+            updateDropdownBtnLabel('subDropdownBtn', selectedSubcategories, 'Subcategorias');
         }
 
         function toggleSubcategory(sub) {
@@ -526,8 +536,19 @@
             } else {
                 selectedSubcategories.add(sub);
             }
-            renderSubcategoryChips();
+            buildSubcategoryDropdown();
             updateDashboard();
+        }
+
+        function updateDropdownBtnLabel(btnId, set, defaultName) {
+            const btn = document.getElementById(btnId);
+            if (set.size === 0) {
+                btn.textContent = `Todas as ${defaultName}`;
+            } else if (set.size === 1) {
+                btn.textContent = Array.from(set)[0];
+            } else {
+                btn.textContent = `${set.size} selecionadas`;
+            }
         }
 
         function cleanupSubcategories() {
@@ -555,8 +576,8 @@
             selectedCategories.clear();
             selectedSubcategories.clear();
             document.getElementById('monthSelect').value = 'TODOS';
-            renderCategoryChips();
-            renderSubcategoryChips();
+            buildCategoryDropdown();
+            buildSubcategoryDropdown();
             updateDashboard();
         }
 
@@ -569,7 +590,7 @@
             const hasSubs = selectedSubcategories.size > 0;
 
             if (!hasMonth && !hasCats && !hasSubs) {
-                tagsList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted);">Visualizando todos os registros sem filtros</span>';
+                tagsList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted);">Visualizando todos os registros sem restrições</span>';
                 return;
             }
 
