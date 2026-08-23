@@ -33,19 +33,28 @@
         .status-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(52, 211, 153, 0.15); color: #34d399; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3); }
         .status-dot { width: 8px; height: 8px; background: #34d399; border-radius: 50%; display: inline-block; }
         
-        .control-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; background: var(--card-bg); padding: 14px 18px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
+        .control-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; background: var(--card-bg); padding: 14px 18px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
         .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .filter-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         
-        .date-select, .chart-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
-        .date-select:focus, .chart-select:focus { border-color: var(--accent); }
+        .date-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
+        .date-select:focus { border-color: var(--accent); }
 
-        .filter-chips-container { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
-        .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; background: #1e293b; border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; white-space: nowrap; }
-        .filter-chip:hover, .filter-chip.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
+        .chips-wrapper { margin-bottom: 20px; }
+        .chips-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .chips-title { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .filter-chips-container { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 6px; flex-wrap: wrap; }
         
-        .active-sub-tag { display: none; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; }
-        .active-sub-tag span { cursor: pointer; font-weight: bold; margin-left: 4px; }
+        .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; background: #1e293b; border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; white-space: nowrap; user-select: none; }
+        .filter-chip:hover { border-color: var(--accent); color: #fff; }
+        .filter-chip.active { background: #0284c7; color: #fff; border-color: #38bdf8; font-weight: 600; }
+        .filter-chip.sub-chip.active { background: #7c3aed; color: #fff; border-color: #a78bfa; }
+
+        .active-tags-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(30, 41, 59, 0.4); padding: 8px 14px; border-radius: 8px; border: 1px dashed var(--border); }
+        .tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; }
+        .tag-pill-cat { background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid var(--accent); }
+        .tag-pill-sub { background: rgba(167, 139, 250, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
+        .tag-pill span.remove-btn { cursor: pointer; font-weight: bold; margin-left: 2px; }
 
         .btn-reset { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; text-decoration: underline; white-space: nowrap; margin-left: auto; }
         
@@ -96,7 +105,7 @@
     <div class="header">
         <div>
             <h1>Dashboard de Consumo Doméstico & Despesas</h1>
-            <p>Filtros Temporais por Mês/Ano, Categorias e Subcategorias</p>
+            <p>Seleção Múltipla com Somatório Combinado de Categorias e Subcategorias</p>
         </div>
         <div style="text-align: right;">
             <div class="status-badge"><span class="status-dot"></span> Sincronizado via Nuvem</div>
@@ -114,28 +123,43 @@
         </div>
 
         <div class="filter-group">
-            <div id="activeSubTag" class="active-sub-tag">
-                <span id="subTagName"></span>
-                <span title="Remover filtro de subcategoria" onclick="clearSubcategoryFilter()">✕</span>
-            </div>
-            <button class="btn-reset" onclick="resetAllFilters()">Limpar Todos os Filtros</button>
+            <button class="btn-reset" onclick="resetAllFilters()">🧹 Limpar Todos os Filtros</button>
         </div>
     </div>
 
-    <!-- Chips de Categorias Macro -->
-    <div class="filter-chips-container" id="chipsContainer"></div>
+    <!-- Seletor Múltiplo de Categorias Macro -->
+    <div class="chips-wrapper">
+        <div class="chips-header">
+            <span class="chips-title">🏷️ Categorias Macro (Clique para somar / desmarcar):</span>
+        </div>
+        <div class="filter-chips-container" id="categoryChips"></div>
+    </div>
+
+    <!-- Seletor Múltiplo de Subcategorias -->
+    <div class="chips-wrapper" id="subChipsWrapper">
+        <div class="chips-header">
+            <span class="chips-title">🔍 Subcategorias (Clique para somar / desmarcar):</span>
+        </div>
+        <div class="filter-chips-container" id="subcategoryChips"></div>
+    </div>
+
+    <!-- Barra de Tags Ativas -->
+    <div class="active-tags-bar" id="activeTagsBar">
+        <span style="font-size: 12px; color: var(--text-muted);">Filtros Aplicados:</span>
+        <div id="tagsList" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+    </div>
 
     <!-- KPIs Dinâmicos -->
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-title" id="kpiTitleGasto">Gasto Total (Filtro)</div>
             <div class="kpi-val" style="color: var(--accent);" id="kpiGasto">R$ 0,00</div>
-            <div class="kpi-sub" id="kpiGastoSub">Consolidado no período</div>
+            <div class="kpi-sub" id="kpiGastoSub">Consolidado da seleção</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">Ticket Médio por Ida</div>
             <div class="kpi-val" style="color: var(--accent-green);" id="kpiTicket">R$ 0,00</div>
-            <div class="kpi-sub" id="kpiTicketSub">Por compra / cupom</div>
+            <div class="kpi-sub">Por compra na seleção</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">% Sobre o Total Geral</div>
@@ -143,7 +167,7 @@
             <div class="kpi-sub">Participação orçamentária</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-title">SKUs Filtrados</div>
+            <div class="kpi-title">SKUs Selecionados</div>
             <div class="kpi-val" style="color: var(--accent-purple);" id="kpiItens">0 itens</div>
             <div class="kpi-sub" id="kpiVolumeSub">Volume total</div>
         </div>
@@ -154,17 +178,14 @@
         <div class="chart-card">
             <div class="chart-header">
                 <h3>Distribuição por Categoria Macro (R$)</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">(Clique na fatia para filtrar)</span>
+                <span style="font-size: 11px; color: var(--text-muted);">(Clique na fatia para alternar seleção)</span>
             </div>
             <canvas id="catChart" height="230"></canvas>
         </div>
         <div class="chart-card">
             <div class="chart-header">
-                <h3 id="barChartTitle">Subcategorias (R$)</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">(Clique na barra para filtrar)</span>
-                <select class="chart-select" id="catSelect" onchange="selectCategory(this.value)">
-                    <option value="TODAS">Todas as Categorias</option>
-                </select>
+                <h3 id="barChartTitle">Subcategorias Selecionadas (R$)</h3>
+                <span style="font-size: 11px; color: var(--text-muted);">(Clique na barra para alternar seleção)</span>
             </div>
             <canvas id="subChart" height="230"></canvas>
         </div>
@@ -224,8 +245,10 @@
         let rawData = [];
         let comprasData = [];
         let selectedMonth = 'TODOS';
-        let selectedCategory = 'TODAS';
-        let selectedSubcategory = 'TODAS';
+        
+        // Conjuntos para suportar MÚLTIPLAS seleções e alternância com toggle
+        let selectedCategories = new Set();
+        let selectedSubcategories = new Set();
         
         let catChartInstance = null;
         let subChartInstance = null;
@@ -276,7 +299,6 @@
             return parseFloat(str) || 0;
         }
 
-        // Converte "DD/MM/AAAA" para chave "MM/AAAA" e objeto Date para ordenação
         function extractMonthYear(dateStr) {
             if (!dateStr) return { key: 'Outros', label: 'Outros', date: new Date(0) };
             const cleanDate = dateStr.split(' ')[0];
@@ -374,7 +396,8 @@
 
         function init() {
             setupMonthControls();
-            setupCategoryControls();
+            renderCategoryChips();
+            renderSubcategoryChips();
             updateDashboard();
         }
 
@@ -405,130 +428,206 @@
 
         function onMonthChange(monthKey) {
             selectedMonth = monthKey;
-            selectedCategory = 'TODAS';
-            selectedSubcategory = 'TODAS';
-            setupCategoryControls();
-            updateSubTag();
+            selectedCategories.clear();
+            selectedSubcategories.clear();
+            renderCategoryChips();
+            renderSubcategoryChips();
             updateDashboard();
         }
 
-        function setupCategoryControls() {
+        function renderCategoryChips() {
+            const container = document.getElementById('categoryChips');
+            container.innerHTML = '';
+
             const dateFiltered = selectedMonth === 'TODOS' 
                 ? rawData 
                 : rawData.filter(d => d.month_key === selectedMonth);
 
-            const categories = Array.from(new Set(dateFiltered.map(d => d.categoria_macro).filter(Boolean)));
-            const select = document.getElementById('catSelect');
-            const chips = document.getElementById('chipsContainer');
-            
-            chips.innerHTML = '<div class="filter-chip active" onclick="selectCategory(\'TODAS\')">Todas as Categorias</div>';
-            select.innerHTML = '<option value="TODAS">Todas as Categorias</option>';
-            
+            const categories = Array.from(new Set(dateFiltered.map(d => d.categoria_macro).filter(Boolean))).sort();
+
+            const allChip = document.createElement('div');
+            allChip.className = 'filter-chip' + (selectedCategories.size === 0 ? ' active' : '');
+            allChip.textContent = 'Todas as Categorias';
+            allChip.onclick = () => {
+                selectedCategories.clear();
+                selectedSubcategories.clear();
+                renderCategoryChips();
+                renderSubcategoryChips();
+                updateDashboard();
+            };
+            container.appendChild(allChip);
+
             categories.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                select.appendChild(opt);
-
                 const chip = document.createElement('div');
-                chip.className = 'filter-chip';
-                chip.dataset.cat = cat;
+                const isActive = selectedCategories.has(cat);
+                chip.className = 'filter-chip' + (isActive ? ' active' : '');
                 chip.textContent = cat;
-                chip.onclick = () => selectCategory(cat);
-                chips.appendChild(chip);
+                chip.onclick = () => toggleCategory(cat);
+                container.appendChild(chip);
             });
         }
 
-        function selectCategory(cat) {
-            selectedCategory = cat;
-            selectedSubcategory = 'TODAS';
-            document.getElementById('catSelect').value = cat;
-            
-            document.querySelectorAll('.filter-chip').forEach(el => {
-                if ((cat === 'TODAS' && el.textContent.startsWith('Todas')) || el.dataset.cat === cat) {
-                    el.classList.add('active');
-                } else {
-                    el.classList.remove('active');
-                }
-            });
-
-            updateSubTag();
-            updateDashboard();
-        }
-
-        function selectSubcategory(sub) {
-            if (selectedSubcategory === sub) {
-                selectedSubcategory = 'TODAS';
+        function toggleCategory(cat) {
+            if (selectedCategories.has(cat)) {
+                selectedCategories.delete(cat);
             } else {
-                selectedSubcategory = sub;
+                selectedCategories.add(cat);
             }
-            updateSubTag();
+            
+            cleanupSubcategories();
+            
+            renderCategoryChips();
+            renderSubcategoryChips();
             updateDashboard();
         }
 
-        function clearSubcategoryFilter() {
-            selectedSubcategory = 'TODAS';
-            updateSubTag();
+        function renderSubcategoryChips() {
+            const container = document.getElementById('subcategoryChips');
+            container.innerHTML = '';
+
+            const dateFiltered = selectedMonth === 'TODOS' 
+                ? rawData 
+                : rawData.filter(d => d.month_key === selectedMonth);
+
+            const baseData = selectedCategories.size > 0
+                ? dateFiltered.filter(d => selectedCategories.has(d.categoria_macro))
+                : dateFiltered;
+
+            const subcategories = Array.from(new Set(baseData.map(d => d.subcategoria).filter(Boolean))).sort();
+
+            if (subcategories.length === 0) {
+                container.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); padding: 4px 0;">Nenhuma subcategoria disponível</span>';
+                return;
+            }
+
+            const allSubChip = document.createElement('div');
+            allSubChip.className = 'filter-chip sub-chip' + (selectedSubcategories.size === 0 ? ' active' : '');
+            allSubChip.textContent = 'Todas as Subcategorias';
+            allSubChip.onclick = () => {
+                selectedSubcategories.clear();
+                renderSubcategoryChips();
+                updateDashboard();
+            };
+            container.appendChild(allSubChip);
+
+            subcategories.forEach(sub => {
+                const chip = document.createElement('div');
+                const isActive = selectedSubcategories.has(sub);
+                chip.className = 'filter-chip sub-chip' + (isActive ? ' active' : '');
+                chip.textContent = sub;
+                chip.onclick = () => toggleSubcategory(sub);
+                container.appendChild(chip);
+            });
+        }
+
+        function toggleSubcategory(sub) {
+            if (selectedSubcategories.has(sub)) {
+                selectedSubcategories.delete(sub);
+            } else {
+                selectedSubcategories.add(sub);
+            }
+            renderSubcategoryChips();
             updateDashboard();
+        }
+
+        function cleanupSubcategories() {
+            if (selectedCategories.size === 0) return;
+
+            const dateFiltered = selectedMonth === 'TODOS' 
+                ? rawData 
+                : rawData.filter(d => d.month_key === selectedMonth);
+
+            const validSubs = new Set(
+                dateFiltered
+                    .filter(d => selectedCategories.has(d.categoria_macro))
+                    .map(d => d.subcategoria)
+            );
+
+            for (let sub of selectedSubcategories) {
+                if (!validSubs.has(sub)) {
+                    selectedSubcategories.delete(sub);
+                }
+            }
         }
 
         function resetAllFilters() {
             selectedMonth = 'TODOS';
-            selectedCategory = 'TODAS';
-            selectedSubcategory = 'TODAS';
+            selectedCategories.clear();
+            selectedSubcategories.clear();
             document.getElementById('monthSelect').value = 'TODOS';
-            document.getElementById('catSelect').value = 'TODAS';
-            setupCategoryControls();
-            updateSubTag();
+            renderCategoryChips();
+            renderSubcategoryChips();
             updateDashboard();
         }
 
-        function updateSubTag() {
-            const tag = document.getElementById('activeSubTag');
-            if (selectedSubcategory !== 'TODAS') {
-                document.getElementById('subTagName').textContent = 'Sub: ' + selectedSubcategory;
-                tag.style.display = 'inline-flex';
-            } else {
-                tag.style.display = 'none';
+        function updateTagsBar() {
+            const tagsList = document.getElementById('tagsList');
+            tagsList.innerHTML = '';
+
+            const hasMonth = selectedMonth !== 'TODOS';
+            const hasCats = selectedCategories.size > 0;
+            const hasSubs = selectedSubcategories.size > 0;
+
+            if (!hasMonth && !hasCats && !hasSubs) {
+                tagsList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted);">Visualizando todos os registros sem filtros</span>';
+                return;
             }
+
+            if (hasMonth) {
+                const mLabel = document.getElementById('monthSelect').selectedOptions[0].text;
+                const pill = document.createElement('div');
+                pill.className = 'tag-pill tag-pill-cat';
+                pill.innerHTML = `Mês: ${mLabel} <span class="remove-btn" onclick="onMonthChange('TODOS')">✕</span>`;
+                tagsList.appendChild(pill);
+            }
+
+            selectedCategories.forEach(cat => {
+                const pill = document.createElement('div');
+                pill.className = 'tag-pill tag-pill-cat';
+                pill.innerHTML = `Cat: ${cat} <span class="remove-btn" onclick="toggleCategory('${cat}')">✕</span>`;
+                tagsList.appendChild(pill);
+            });
+
+            selectedSubcategories.forEach(sub => {
+                const pill = document.createElement('div');
+                pill.className = 'tag-pill tag-pill-sub';
+                pill.innerHTML = `Sub: ${sub} <span class="remove-btn" onclick="toggleSubcategory('${sub}')">✕</span>`;
+                tagsList.appendChild(pill);
+            });
         }
 
         function updateDashboard() {
-            // 1. Filtro Temporal (Mês)
-            const monthFilteredData = selectedMonth === 'TODOS'
+            const monthFiltered = selectedMonth === 'TODOS'
                 ? rawData
                 : rawData.filter(d => d.month_key === selectedMonth);
 
-            const totalGastoNoMes = monthFilteredData.reduce((acc, it) => acc + it.valor_total, 0);
+            const totalGastoPeriodo = monthFiltered.reduce((acc, it) => acc + it.valor_total, 0);
 
-            // 2. Filtro de Categoria Macro
-            const catFilteredData = selectedCategory === 'TODAS'
-                ? monthFilteredData
-                : monthFilteredData.filter(d => d.categoria_macro === selectedCategory);
+            const catFiltered = selectedCategories.size === 0
+                ? monthFiltered
+                : monthFiltered.filter(d => selectedCategories.has(d.categoria_macro));
 
-            // 3. Filtro de Subcategoria
-            const finalFilteredData = selectedSubcategory === 'TODAS'
-                ? catFilteredData
-                : catFilteredData.filter(d => d.subcategoria === selectedSubcategory);
+            const finalFiltered = selectedSubcategories.size === 0
+                ? catFiltered
+                : catFiltered.filter(d => selectedSubcategories.has(d.subcategoria));
 
-            // KPIs
-            const gastoFiltrado = finalFilteredData.reduce((acc, it) => acc + it.valor_total, 0);
-            const qtdCompras = new Set(finalFilteredData.map(d => d.id_compra)).size || 1;
+            const gastoFiltrado = finalFiltered.reduce((acc, it) => acc + it.valor_total, 0);
+            const qtdCompras = new Set(finalFiltered.map(d => d.id_compra)).size || 1;
             const ticketMedio = gastoFiltrado / qtdCompras;
-            const share = totalGastoNoMes > 0 ? (gastoFiltrado / totalGastoNoMes) * 100 : 0;
-            const volumeTotal = finalFilteredData.reduce((acc, it) => acc + it.quantidade, 0);
+            const share = totalGastoPeriodo > 0 ? (gastoFiltrado / totalGastoPeriodo) * 100 : 0;
+            const volumeTotal = finalFiltered.reduce((acc, it) => acc + it.quantidade, 0);
 
             document.getElementById('kpiGasto').textContent = brlFormatter.format(gastoFiltrado);
             document.getElementById('kpiTicket').textContent = brlFormatter.format(ticketMedio);
             document.getElementById('kpiShare').textContent = share.toFixed(1).replace('.', ',') + '%';
-            document.getElementById('kpiItens').textContent = finalFilteredData.length + ' registros';
+            document.getElementById('kpiItens').textContent = finalFiltered.length + ' registros';
             document.getElementById('kpiVolumeSub').textContent = numFormatter.format(volumeTotal) + ' unidades/kg';
 
-            // Atualizar Gráficos e Tabelas
-            renderCategoryPie(monthFilteredData);
-            renderSubcategoryBar(catFilteredData);
+            updateTagsBar();
+            renderCategoryPie(monthFiltered);
+            renderSubcategoryBar(catFiltered);
             renderComprasTable();
-            renderTable(finalFilteredData);
+            renderTable(finalFiltered);
         }
 
         function renderCategoryPie(data) {
@@ -540,7 +639,13 @@
 
             const labels = Object.keys(catMap).sort((a, b) => catMap[b] - catMap[a]);
             const values = labels.map(l => catMap[l]);
-            const bgColors = labels.map(l => categoryColors[l] || '#94a3b8');
+            
+            const bgColors = labels.map(l => {
+                if (selectedCategories.size === 0 || selectedCategories.has(l)) {
+                    return categoryColors[l] || '#94a3b8';
+                }
+                return '#334155';
+            });
 
             if (catChartInstance) catChartInstance.destroy();
 
@@ -562,7 +667,7 @@
                         if (activeEls && activeEls.length > 0) {
                             const idx = activeEls[0].index;
                             const clickedCat = labels[idx];
-                            selectCategory(selectedCategory === clickedCat ? 'TODAS' : clickedCat);
+                            toggleCategory(clickedCat);
                         }
                     },
                     plugins: {
@@ -590,17 +695,22 @@
             const values = labels.map(l => subMap[l]);
             
             const bgColors = labels.map(l => {
-                if (selectedSubcategory !== 'TODAS' && l === selectedSubcategory) {
+                if (selectedSubcategories.has(l)) {
                     return '#38bdf8';
                 }
-                return selectedCategory !== 'TODAS' 
-                    ? (categoryColors[selectedCategory] || '#a78bfa') 
+                return selectedCategories.size === 1 
+                    ? (categoryColors[Array.from(selectedCategories)[0]] || '#a78bfa') 
                     : '#a78bfa';
             });
 
-            document.getElementById('barChartTitle').textContent = selectedCategory === 'TODAS' 
-                ? 'Subcategorias do Mês (R$)' 
-                : 'Subcategorias de ' + selectedCategory + ' (R$)';
+            let titleText = 'Subcategorias (R$)';
+            if (selectedCategories.size === 1) {
+                titleText = `Subcategorias de ${Array.from(selectedCategories)[0]} (R$)`;
+            } else if (selectedCategories.size > 1) {
+                titleText = `Subcategorias (${selectedCategories.size} Categorias Selecionadas)`;
+            }
+
+            document.getElementById('barChartTitle').textContent = titleText;
 
             if (subChartInstance) subChartInstance.destroy();
 
@@ -622,7 +732,7 @@
                         if (activeEls && activeEls.length > 0) {
                             const idx = activeEls[0].index;
                             const clickedSub = labels[idx];
-                            selectSubcategory(clickedSub);
+                            toggleSubcategory(clickedSub);
                         }
                     },
                     scales: {
@@ -679,12 +789,11 @@
                 const mLabel = document.getElementById('monthSelect').selectedOptions[0].text;
                 titleText += ` [${mLabel}]`;
             }
-            if (selectedCategory !== 'TODAS' && selectedSubcategory !== 'TODAS') {
-                titleText += ` : ${selectedCategory} > ${selectedSubcategory}`;
-            } else if (selectedCategory !== 'TODAS') {
-                titleText += ` : ${selectedCategory}`;
-            } else if (selectedSubcategory !== 'TODAS') {
-                titleText += ` : Subcategoria ${selectedSubcategory}`;
+            if (selectedCategories.size > 0) {
+                titleText += ` : ${Array.from(selectedCategories).join(' + ')}`;
+            }
+            if (selectedSubcategories.size > 0) {
+                titleText += ` > (${Array.from(selectedSubcategories).join(' + ')})`;
             }
 
             document.getElementById('tableTitle').textContent = titleText;
