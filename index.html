@@ -6,7 +6,7 @@
     <title>Dashboard Mercado</title>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- PapaParse para carregar e parsear CSV direto da nuvem -->
+    <!-- PapaParse para carregar CSV diretamente -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
         :root {
@@ -33,11 +33,21 @@
         .status-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(52, 211, 153, 0.15); color: #34d399; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3); }
         .status-dot { width: 8px; height: 8px; background: #34d399; border-radius: 50%; display: inline-block; }
         
-        .filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; }
-        .filter-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+        .control-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; background: var(--card-bg); padding: 14px 18px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
+        .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .filter-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        
+        .date-select, .chart-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
+        .date-select:focus, .chart-select:focus { border-color: var(--accent); }
+
+        .filter-chips-container { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
         .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; background: #1e293b; border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; white-space: nowrap; }
         .filter-chip:hover, .filter-chip.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
-        .btn-reset { margin-left: auto; font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; text-decoration: underline; white-space: nowrap; }
+        
+        .active-sub-tag { display: none; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+        .active-sub-tag span { cursor: pointer; font-weight: bold; margin-left: 4px; }
+
+        .btn-reset { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; text-decoration: underline; white-space: nowrap; margin-left: auto; }
         
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
@@ -47,9 +57,8 @@
 
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px; }
         .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; }
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px; }
         .chart-card h3 { font-size: 15px; font-weight: 600; color: #e2e8f0; }
-        .chart-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-size: 13px; outline: none; }
 
         .section-title { font-size: 18px; font-weight: 600; margin: 28px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
         
@@ -86,8 +95,8 @@
 
     <div class="header">
         <div>
-            <h1>Dashboard Mercado</h1>
-            <p>Conexão Direta e Automática com Google Sheets • Tempo Real</p>
+            <h1>Dashboard de Consumo Doméstico & Despesas</h1>
+            <p>Filtros Temporais por Mês/Ano, Categorias e Subcategorias</p>
         </div>
         <div style="text-align: right;">
             <div class="status-badge"><span class="status-dot"></span> Sincronizado via Nuvem</div>
@@ -95,22 +104,38 @@
         </div>
     </div>
 
-    <div class="filter-bar">
-        <span class="filter-label">Filtro de Categoria:</span>
-        <div id="chipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-        <button class="btn-reset" onclick="selectCategory('TODAS')">Limpar Filtro</button>
+    <!-- Barra de Controle Superior: Filtros Temporais e Ações -->
+    <div class="control-bar">
+        <div class="filter-group">
+            <span class="filter-label">📅 Mês / Período:</span>
+            <select class="date-select" id="monthSelect" onchange="onMonthChange(this.value)">
+                <option value="TODOS">Todos os Meses</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <div id="activeSubTag" class="active-sub-tag">
+                <span id="subTagName"></span>
+                <span title="Remover filtro de subcategoria" onclick="clearSubcategoryFilter()">✕</span>
+            </div>
+            <button class="btn-reset" onclick="resetAllFilters()">Limpar Todos os Filtros</button>
+        </div>
     </div>
 
+    <!-- Chips de Categorias Macro -->
+    <div class="filter-chips-container" id="chipsContainer"></div>
+
+    <!-- KPIs Dinâmicos -->
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-title" id="kpiTitleGasto">Gasto Total (Filtro)</div>
             <div class="kpi-val" style="color: var(--accent);" id="kpiGasto">R$ 0,00</div>
-            <div class="kpi-sub" id="kpiGastoSub">Consolidado</div>
+            <div class="kpi-sub" id="kpiGastoSub">Consolidado no período</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-title">Ticket Médio</div>
+            <div class="kpi-title">Ticket Médio por Ida</div>
             <div class="kpi-val" style="color: var(--accent-green);" id="kpiTicket">R$ 0,00</div>
-            <div class="kpi-sub">Por registro/ida</div>
+            <div class="kpi-sub" id="kpiTicketSub">Por compra / cupom</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">% Sobre o Total Geral</div>
@@ -124,6 +149,7 @@
         </div>
     </div>
 
+    <!-- Gráficos Analíticos -->
     <div class="charts-grid">
         <div class="chart-card">
             <div class="chart-header">
@@ -134,7 +160,8 @@
         </div>
         <div class="chart-card">
             <div class="chart-header">
-                <h3 id="barChartTitle">Subcategorias / Itens (R$)</h3>
+                <h3 id="barChartTitle">Subcategorias (R$)</h3>
+                <span style="font-size: 11px; color: var(--text-muted);">(Clique na barra para filtrar)</span>
                 <select class="chart-select" id="catSelect" onchange="selectCategory(this.value)">
                     <option value="TODAS">Todas as Categorias</option>
                 </select>
@@ -143,6 +170,7 @@
         </div>
     </div>
 
+    <!-- Comparativo por Estabelecimento / Compra -->
     <div class="section-title">🏢 Histórico por Estabelecimento / Despesa</div>
     <div class="table-card">
         <table>
@@ -161,6 +189,7 @@
         </table>
     </div>
 
+    <!-- Tabela Geral Filtrável -->
     <div class="section-title">
         <span id="tableTitle">🛒 Itens Registrados</span>
         <span style="font-size: 13px; color: var(--text-muted);" id="tableCount"></span>
@@ -187,19 +216,27 @@
     <script>
         // =========================================================================
         // CONFIGURAÇÃO DO GOOGLE SHEETS
-        // Substitua abaixo pelas URLs de exportação CSV das suas abas publicadas
+        // Cole abaixo as URLs CSV publicadas das suas abas
         // =========================================================================
         const GOOGLE_SHEETS_ITENS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1163794601&single=true&output=csv';
         const GOOGLE_SHEETS_COMPRAS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1241219982&single=true&output=csv';
 
         let rawData = [];
         let comprasData = [];
+        let selectedMonth = 'TODOS';
         let selectedCategory = 'TODAS';
+        let selectedSubcategory = 'TODAS';
+        
         let catChartInstance = null;
         let subChartInstance = null;
 
         const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
         const numFormatter = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+
+        const monthNames = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
 
         const categoryColors = {
             "Proteínas": "#f87171",
@@ -239,34 +276,47 @@
             return parseFloat(str) || 0;
         }
 
-        async function loadDataFromSheets() {
-            try {
-                // Se o usuário ainda não configurou as URLs, carregamos o fallback local
-                if (!GOOGLE_SHEETS_ITENS_CSV_URL.startsWith('http')) {
-                    console.warn('URL do Google Sheets não configurada. Usando dados locais de exemplo.');
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                    document.getElementById('lastUpdateText').textContent = 'Modo Local (Configure o Link do Sheets)';
-                    return;
-                }
+        // Converte "DD/MM/AAAA" para chave "MM/AAAA" e objeto Date para ordenação
+        function extractMonthYear(dateStr) {
+            if (!dateStr) return { key: 'Outros', label: 'Outros', date: new Date(0) };
+            const cleanDate = dateStr.split(' ')[0];
+            const parts = cleanDate.split('/');
+            if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10);
+                const year = parseInt(parts[2], 10);
+                const monthPadded = String(month).padStart(2, '0');
+                const label = `${monthNames[month - 1]} / ${year}`;
+                return {
+                    key: `${monthPadded}/${year}`,
+                    label: label,
+                    date: new Date(year, month - 1, day)
+                };
+            }
+            return { key: 'Outros', label: 'Outros', date: new Date(0) };
+        }
 
-                const [resItens, resCompras] = await Promise.all([
-                    fetch(GOOGLE_SHEETS_ITENS_CSV_URL),
-                    fetch(GOOGLE_SHEETS_COMPRAS_CSV_URL)
-                ]);
+        function loadDataFromSheets() {
+            if (!GOOGLE_SHEETS_ITENS_CSV_URL.startsWith('http')) {
+                console.warn('URL do Google Sheets não configurada.');
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('lastUpdateText').textContent = 'Modo Local (Configure o Link do Sheets)';
+                return;
+            }
 
-                const [csvItens, csvCompras] = await Promise.all([
-                    resItens.text(),
-                    resCompras.text()
-                ]);
-
-                Papa.parse(csvItens, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        rawData = results.data.map((r, i) => ({
+            Papa.parse(GOOGLE_SHEETS_ITENS_CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    rawData = results.data.map((r, i) => {
+                        const dateInfo = extractMonthYear(r.data || r.data_compra);
+                        return {
                             id_item: r.id_item || (i + 1),
                             id_compra: r.id_compra,
                             data: r.data || r.data_compra,
+                            month_key: dateInfo.key,
+                            month_label: dateInfo.label,
                             estabelecimento: r.estabelecimento,
                             descricao_original: r.descricao_original,
                             categoria_macro: r.categoria_macro,
@@ -277,51 +327,101 @@
                             preco_unitario: parseCurrencyBR(r.preco_unitario),
                             desconto: parseCurrencyBR(r.desconto),
                             valor_total: parseCurrencyBR(r.valor_total)
-                        }));
+                        };
+                    });
 
-                        Papa.parse(csvCompras, {
-                            header: true,
-                            skipEmptyLines: true,
-                            complete: function(compResults) {
-                                comprasData = compResults.data.map(c => ({
+                    Papa.parse(GOOGLE_SHEETS_COMPRAS_CSV_URL, {
+                        download: true,
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(compResults) {
+                            comprasData = compResults.data.map(c => {
+                                const dateInfo = extractMonthYear(c.data_compra);
+                                return {
                                     id_compra: c.id_compra,
                                     data_compra: c.data_compra,
+                                    month_key: dateInfo.key,
                                     estabelecimento: c.estabelecimento,
                                     total_skus: c.total_skus || c.total_itens,
                                     valor_bruto: parseCurrencyBR(c.valor_bruto),
                                     desconto: parseCurrencyBR(c.desconto),
                                     valor_liquido: parseCurrencyBR(c.valor_liquido)
-                                }));
+                                };
+                            });
 
-                                document.getElementById('loadingOverlay').style.display = 'none';
-                                document.getElementById('lastUpdateText').textContent = 'Última Leitura: ' + new Date().toLocaleDateString('pt-BR');
-                                init();
-                            }
-                        });
-                    }
-                });
-            } catch (err) {
-                console.error('Erro ao buscar dados do Google Sheets:', err);
-                document.getElementById('loadingOverlay').innerHTML = `
-                    <p style="color: #f87171; font-weight: 600; margin-bottom: 8px;">Erro ao carregar dados do Google Sheets</p>
-                    <p style="font-size: 13px; color: var(--text-muted);">Verifique se a planilha está publicada na web como CSV.</p>
-                `;
-            }
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                            document.getElementById('lastUpdateText').textContent = 'Última Leitura: ' + new Date().toLocaleDateString('pt-BR');
+                            init();
+                        },
+                        error: function(err) {
+                            showError(err);
+                        }
+                    });
+                },
+                error: function(err) {
+                    showError(err);
+                }
+            });
+        }
+
+        function showError(err) {
+            console.error('Erro ao carregar CSV:', err);
+            document.getElementById('loadingOverlay').innerHTML = `
+                <p style="color: #f87171; font-weight: 600; margin-bottom: 8px;">Erro ao carregar dados do Google Sheets</p>
+                <p style="font-size: 13px; color: var(--text-muted);">Verifique se a planilha está publicada na web como CSV e se os links estão corretos.</p>
+            `;
         }
 
         function init() {
+            setupMonthControls();
             setupCategoryControls();
-            renderCategoryPie();
-            renderComprasTable();
+            updateDashboard();
+        }
+
+        function setupMonthControls() {
+            const select = document.getElementById('monthSelect');
+            select.innerHTML = '<option value="TODOS">Todos os Meses</option>';
+
+            const monthMap = {};
+            rawData.forEach(d => {
+                if (d.month_key && d.month_key !== 'Outros') {
+                    monthMap[d.month_key] = d.month_label;
+                }
+            });
+
+            const sortedKeys = Object.keys(monthMap).sort((a, b) => {
+                const [mA, yA] = a.split('/').map(Number);
+                const [mB, yB] = b.split('/').map(Number);
+                return (yB * 100 + mB) - (yA * 100 + mA);
+            });
+
+            sortedKeys.forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = monthMap[key];
+                select.appendChild(opt);
+            });
+        }
+
+        function onMonthChange(monthKey) {
+            selectedMonth = monthKey;
+            selectedCategory = 'TODAS';
+            selectedSubcategory = 'TODAS';
+            setupCategoryControls();
+            updateSubTag();
             updateDashboard();
         }
 
         function setupCategoryControls() {
-            const categories = Array.from(new Set(rawData.map(d => d.categoria_macro).filter(Boolean)));
+            const dateFiltered = selectedMonth === 'TODOS' 
+                ? rawData 
+                : rawData.filter(d => d.month_key === selectedMonth);
+
+            const categories = Array.from(new Set(dateFiltered.map(d => d.categoria_macro).filter(Boolean)));
             const select = document.getElementById('catSelect');
             const chips = document.getElementById('chipsContainer');
             
-            chips.innerHTML = '<div class="filter-chip active" onclick="selectCategory(\'TODAS\')">Todas</div>';
+            chips.innerHTML = '<div class="filter-chip active" onclick="selectCategory(\'TODAS\')">Todas as Categorias</div>';
             select.innerHTML = '<option value="TODAS">Todas as Categorias</option>';
             
             categories.forEach(cat => {
@@ -341,44 +441,99 @@
 
         function selectCategory(cat) {
             selectedCategory = cat;
+            selectedSubcategory = 'TODAS';
             document.getElementById('catSelect').value = cat;
             
             document.querySelectorAll('.filter-chip').forEach(el => {
-                if ((cat === 'TODAS' && el.textContent === 'Todas') || el.dataset.cat === cat) {
+                if ((cat === 'TODAS' && el.textContent.startsWith('Todas')) || el.dataset.cat === cat) {
                     el.classList.add('active');
                 } else {
                     el.classList.remove('active');
                 }
             });
 
+            updateSubTag();
             updateDashboard();
         }
 
-        function updateDashboard() {
-            const totalGeral = rawData.reduce((acc, it) => acc + it.valor_total, 0);
-            const filteredData = selectedCategory === 'TODAS' 
-                ? rawData 
-                : rawData.filter(d => d.categoria_macro === selectedCategory);
+        function selectSubcategory(sub) {
+            if (selectedSubcategory === sub) {
+                selectedSubcategory = 'TODAS';
+            } else {
+                selectedSubcategory = sub;
+            }
+            updateSubTag();
+            updateDashboard();
+        }
 
-            const gastoFiltrado = filteredData.reduce((acc, it) => acc + it.valor_total, 0);
-            const qtdCompras = new Set(filteredData.map(d => d.id_compra)).size || 1;
+        function clearSubcategoryFilter() {
+            selectedSubcategory = 'TODAS';
+            updateSubTag();
+            updateDashboard();
+        }
+
+        function resetAllFilters() {
+            selectedMonth = 'TODOS';
+            selectedCategory = 'TODAS';
+            selectedSubcategory = 'TODAS';
+            document.getElementById('monthSelect').value = 'TODOS';
+            document.getElementById('catSelect').value = 'TODAS';
+            setupCategoryControls();
+            updateSubTag();
+            updateDashboard();
+        }
+
+        function updateSubTag() {
+            const tag = document.getElementById('activeSubTag');
+            if (selectedSubcategory !== 'TODAS') {
+                document.getElementById('subTagName').textContent = 'Sub: ' + selectedSubcategory;
+                tag.style.display = 'inline-flex';
+            } else {
+                tag.style.display = 'none';
+            }
+        }
+
+        function updateDashboard() {
+            // 1. Filtro Temporal (Mês)
+            const monthFilteredData = selectedMonth === 'TODOS'
+                ? rawData
+                : rawData.filter(d => d.month_key === selectedMonth);
+
+            const totalGastoNoMes = monthFilteredData.reduce((acc, it) => acc + it.valor_total, 0);
+
+            // 2. Filtro de Categoria Macro
+            const catFilteredData = selectedCategory === 'TODAS'
+                ? monthFilteredData
+                : monthFilteredData.filter(d => d.categoria_macro === selectedCategory);
+
+            // 3. Filtro de Subcategoria
+            const finalFilteredData = selectedSubcategory === 'TODAS'
+                ? catFilteredData
+                : catFilteredData.filter(d => d.subcategoria === selectedSubcategory);
+
+            // KPIs
+            const gastoFiltrado = finalFilteredData.reduce((acc, it) => acc + it.valor_total, 0);
+            const qtdCompras = new Set(finalFilteredData.map(d => d.id_compra)).size || 1;
             const ticketMedio = gastoFiltrado / qtdCompras;
-            const share = totalGeral > 0 ? (gastoFiltrado / totalGeral) * 100 : 0;
-            const volumeTotal = filteredData.reduce((acc, it) => acc + it.quantidade, 0);
+            const share = totalGastoNoMes > 0 ? (gastoFiltrado / totalGastoNoMes) * 100 : 0;
+            const volumeTotal = finalFilteredData.reduce((acc, it) => acc + it.quantidade, 0);
 
             document.getElementById('kpiGasto').textContent = brlFormatter.format(gastoFiltrado);
             document.getElementById('kpiTicket').textContent = brlFormatter.format(ticketMedio);
             document.getElementById('kpiShare').textContent = share.toFixed(1).replace('.', ',') + '%';
-            document.getElementById('kpiItens').textContent = filteredData.length + ' registros';
+            document.getElementById('kpiItens').textContent = finalFilteredData.length + ' registros';
             document.getElementById('kpiVolumeSub').textContent = numFormatter.format(volumeTotal) + ' unidades/kg';
 
-            renderSubcategoryBar(filteredData);
-            renderTable(filteredData);
+            // Atualizar Gráficos e Tabelas
+            renderCategoryPie(monthFilteredData);
+            renderSubcategoryBar(catFilteredData);
+            renderComprasTable();
+            renderTable(finalFilteredData);
         }
 
-        function renderCategoryPie() {
+        function renderCategoryPie(data) {
             const catMap = {};
-            rawData.forEach(d => {
+            data.forEach(d => {
                 if (!d.categoria_macro) return;
                 catMap[d.categoria_macro] = (catMap[d.categoria_macro] || 0) + d.valor_total;
             });
@@ -426,20 +581,25 @@
 
         function renderSubcategoryBar(data) {
             const subMap = {};
-            const isAll = selectedCategory === 'TODAS';
-            const groupKey = isAll ? 'categoria_macro' : 'subcategoria';
-            
             data.forEach(d => {
-                const key = d[groupKey] || 'Outros';
+                const key = d.subcategoria || 'Geral';
                 subMap[key] = (subMap[key] || 0) + d.valor_total;
             });
 
             const labels = Object.keys(subMap).sort((a, b) => subMap[b] - subMap[a]);
             const values = labels.map(l => subMap[l]);
-            const bgColors = labels.map(l => isAll ? (categoryColors[l] || '#38bdf8') : (categoryColors[selectedCategory] || '#38bdf8'));
+            
+            const bgColors = labels.map(l => {
+                if (selectedSubcategory !== 'TODAS' && l === selectedSubcategory) {
+                    return '#38bdf8';
+                }
+                return selectedCategory !== 'TODAS' 
+                    ? (categoryColors[selectedCategory] || '#a78bfa') 
+                    : '#a78bfa';
+            });
 
-            document.getElementById('barChartTitle').textContent = isAll 
-                ? 'Gastos por Categoria Macro (R$)' 
+            document.getElementById('barChartTitle').textContent = selectedCategory === 'TODAS' 
+                ? 'Subcategorias do Mês (R$)' 
                 : 'Subcategorias de ' + selectedCategory + ' (R$)';
 
             if (subChartInstance) subChartInstance.destroy();
@@ -458,6 +618,13 @@
                 },
                 options: {
                     responsive: true,
+                    onClick: (evt, activeEls) => {
+                        if (activeEls && activeEls.length > 0) {
+                            const idx = activeEls[0].index;
+                            const clickedSub = labels[idx];
+                            selectSubcategory(clickedSub);
+                        }
+                    },
                     scales: {
                         x: { grid: { color: '#243049' }, ticks: { color: '#94a3b8' } },
                         y: { 
@@ -483,7 +650,12 @@
         function renderComprasTable() {
             const tbody = document.getElementById('comprasTableBody');
             tbody.innerHTML = '';
-            comprasData.forEach(c => {
+            
+            const filteredCompras = selectedMonth === 'TODOS'
+                ? comprasData
+                : comprasData.filter(c => c.month_key === selectedMonth);
+
+            filteredCompras.forEach(c => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>#${c.id_compra}</strong></td>
@@ -502,11 +674,21 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
-            document.getElementById('tableTitle').textContent = selectedCategory === 'TODAS'
-                ? '🛒 Todos os Itens Registrados'
-                : '🛒 Itens Filtrados: ' + selectedCategory;
-                
-            document.getElementById('tableCount').textContent = '(' + data.length + ' de ' + rawData.length + ' itens)';
+            let titleText = '🛒 Itens Registrados';
+            if (selectedMonth !== 'TODOS') {
+                const mLabel = document.getElementById('monthSelect').selectedOptions[0].text;
+                titleText += ` [${mLabel}]`;
+            }
+            if (selectedCategory !== 'TODAS' && selectedSubcategory !== 'TODAS') {
+                titleText += ` : ${selectedCategory} > ${selectedSubcategory}`;
+            } else if (selectedCategory !== 'TODAS') {
+                titleText += ` : ${selectedCategory}`;
+            } else if (selectedSubcategory !== 'TODAS') {
+                titleText += ` : Subcategoria ${selectedSubcategory}`;
+            }
+
+            document.getElementById('tableTitle').textContent = titleText;
+            document.getElementById('tableCount').textContent = '(' + data.length + ' registros)';
 
             data.forEach(r => {
                 const tr = document.createElement('tr');
