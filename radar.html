@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Radar de Preços • Modo Mercado</title>
-    <!-- PapaParse para carregar os dados em tempo real -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
         :root {
             --bg: #090d16;
@@ -21,10 +19,15 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text-main); padding: 16px; max-width: 520px; margin: 0 auto; min-height: 100vh; }
         
-        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
         .top-header h1 { font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
-        .refresh-btn { background: #1e293b; color: var(--accent); border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .refresh-btn { background: #1e293b; color: var(--accent); border: 1px solid var(--border); padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
         .refresh-btn:active { transform: scale(0.96); }
+
+        .sync-info-bar { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-bottom: 14px; padding: 0 4px; }
+        .sync-badge { font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+        .badge-cached { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); }
+        .badge-syncing { background: rgba(56, 189, 248, 0.15); color: var(--accent); }
 
         /* Campo de Busca Rápido */
         .search-box-wrapper { position: relative; margin-bottom: 18px; }
@@ -83,12 +86,18 @@
 
     <div class="top-header">
         <h1>🔍 Radar de Preços</h1>
-        <button class="refresh-btn" onclick="fetchSheetData(true)">🔄 Atualizar</button>
+        <button class="refresh-btn" id="btnSync" onclick="syncDataOnline()">🔄 Sincronizar</button>
+    </div>
+
+    <!-- Barra de Status Offline/Cache -->
+    <div class="sync-info-bar">
+        <span id="cacheStatusText">Carregando dados locais...</span>
+        <span class="sync-badge badge-cached" id="cacheBadge">Memória Local</span>
     </div>
 
     <!-- Campo de Busca Autocomplete -->
     <div class="search-box-wrapper">
-        <input type="text" id="searchInput" class="search-input" placeholder="Comece a digitar o produto (ex: queijo, contra, cafe)..." autocomplete="off" oninput="handleSearch(this.value)">
+        <input type="text" id="searchInput" class="search-input" placeholder="Comece a digitar o produto (ex: contra, cafe, leite)..." autocomplete="off" oninput="handleSearch(this.value)">
         <span id="clearBtn" class="clear-search" onclick="clearSearch()">✕</span>
         <div id="suggestionsPanel" class="suggestions-list"></div>
     </div>
@@ -127,7 +136,7 @@
         <div class="history-section-title">⏱️ Preço nas 2 Últimas Idas</div>
         <div id="historyContainer"></div>
 
-        <!-- Comparador Rápido de Gondola -->
+        <!-- Comparador Rápido de Gôndola -->
         <div class="simulator-box">
             <div style="font-size: 12px; font-weight: 600; color: #cbd5e1;">Quanto está na prateleira agora?</div>
             <input type="number" step="0.01" id="currentShelfPrice" placeholder="Ex: 24.90" oninput="evaluateCurrentPrice(this.value)">
@@ -137,11 +146,57 @@
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1163794601&single=true&output=csv';
+        const STORAGE_KEY_CSV = 'radar_precos_csv_data';
+        const STORAGE_KEY_DATE = 'radar_precos_last_sync';
+
         let rawItems = [];
         let indexedProducts = {};
         let currentSelectedKey = null;
 
         const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // Parser CSV nativo embutido (independe de CDNs externos/internet)
+        function parseCSV(text) {
+            const lines = text.trim().split(/\r?\n/);
+            if (lines.length < 2) return [];
+            
+            function parseRow(rowText) {
+                const entries = [];
+                let entry = '';
+                let insideQuote = false;
+                for (let i = 0; i < rowText.length; i++) {
+                    const c = rowText[i];
+                    if (c === '"') {
+                        if (insideQuote && rowText[i + 1] === '"') {
+                            entry += '"';
+                            i++;
+                        } else {
+                            insideQuote = !insideQuote;
+                        }
+                    } else if (c === ',' && !insideQuote) {
+                        entries.push(entry.trim());
+                        entry = '';
+                    } else {
+                        entry += c;
+                    }
+                }
+                entries.push(entry.trim());
+                return entries;
+            }
+
+            const headers = parseRow(lines[0]).map(h => h.trim().toLowerCase());
+            const rows = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const vals = parseRow(lines[i]);
+                const rowObj = {};
+                headers.forEach((h, idx) => {
+                    rowObj[h] = vals[idx] !== undefined ? vals[idx] : '';
+                });
+                rows.push(rowObj);
+            }
+            return rows;
+        }
 
         function parseCurrencyBR(val) {
             if (!val) return 0;
@@ -161,32 +216,70 @@
             return new Date(y || 2026, (m || 1) - 1, d || 1);
         }
 
-        function fetchSheetData(isManual = false) {
-            const btn = document.querySelector('.refresh-btn');
-            if (btn) btn.textContent = '⏳ Lendo...';
+        // Carrega dados salvos localmente ao abrir a página
+        function loadFromLocalStorage() {
+            const cachedCsv = localStorage.getItem(STORAGE_KEY_CSV);
+            const lastSync = localStorage.getItem(STORAGE_KEY_DATE);
+            const statusEl = document.getElementById('cacheStatusText');
 
-            Papa.parse(CSV_URL, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    processRawData(results.data);
-                    if (btn) btn.textContent = '🔄 Atualizar';
-                    if (isManual && currentSelectedKey) {
-                        renderProduct(currentSelectedKey);
-                    }
-                },
-                error: function(err) {
-                    alert('Erro ao sincronizar com a planilha Google.');
-                    if (btn) btn.textContent = '🔄 Atualizar';
+            if (cachedCsv) {
+                const rows = parseCSV(cachedCsv);
+                processRawData(rows);
+                if (lastSync) {
+                    statusEl.textContent = `Salvo offline (${lastSync})`;
+                } else {
+                    statusEl.textContent = 'Dados carregados da memória local';
                 }
-            });
+                return true;
+            } else {
+                statusEl.textContent = 'Sem dados salvos. Conecte à internet e sincronize.';
+                return false;
+            }
+        }
+
+        // Função para sincronizar online quando o usuário clicar no botão
+        async function syncDataOnline() {
+            const btn = document.getElementById('btnSync');
+            const statusEl = document.getElementById('cacheStatusText');
+            btn.textContent = '⏳ Baixando...';
+            btn.disabled = true;
+
+            try {
+                // Adiciona timestamp para forçar dados frescos caso esteja online
+                const cacheBusterUrl = `${CSV_URL}&_t=${Date.now()}`;
+                const res = await fetch(cacheBusterUrl);
+                if (!res.ok) throw new Error('Falha na resposta HTTP');
+                
+                const csvText = await res.text();
+                if (!csvText || csvText.length < 50) throw new Error('CSV recebido vazio ou incompleto');
+
+                // Salva permanentemente no navegador
+                const nowStr = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+                localStorage.setItem(STORAGE_KEY_CSV, csvText);
+                localStorage.setItem(STORAGE_KEY_DATE, nowStr);
+
+                const rows = parseCSV(csvText);
+                processRawData(rows);
+
+                statusEl.textContent = `Atualizado com sucesso (${nowStr})`;
+                btn.textContent = '✅ Atualizado';
+                setTimeout(() => { btn.textContent = '🔄 Sincronizar'; btn.disabled = false; }, 2000);
+
+                if (currentSelectedKey) {
+                    renderProduct(currentSelectedKey);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Não foi possível conectar com a planilha. Você continuará usando os dados salvos offline.');
+                btn.textContent = '🔄 Sincronizar';
+                btn.disabled = false;
+            }
         }
 
         function processRawData(rows) {
             rawItems = rows.map((r, idx) => {
                 const prodName = r.corte_padronizado || r.produto_padronizado || r.descricao_original || 'Item';
-                const un = r.unidade || 'UN';
+                const un = r.unidade || r.unidade_medida || 'UN';
                 const precoUnit = parseCurrencyBR(r.preco_unitario || r.preco_unit);
                 const dataStr = r.data || r.data_compra || '';
                 return {
@@ -199,11 +292,10 @@
                     unidade: un,
                     quantidade: parseCurrencyBR(r.quantidade) || 1,
                     preco_unit: precoUnit,
-                    total: parseCurrencyBR(r.valor_total) || (precoUnit * (parseCurrencyBR(r.quantidade) || 1))
+                    total: parseCurrencyBR(r.valor_total || r.valor_total_item) || (precoUnit * (parseCurrencyBR(r.quantidade) || 1))
                 };
             }).filter(it => it.preco_unit > 0 || it.total > 0);
 
-            // Indexar por Chave de Produto Padronizado
             indexedProducts = {};
             rawItems.forEach(it => {
                 const key = `${it.produto} (${it.unidade})`.trim();
@@ -218,14 +310,12 @@
                 indexedProducts[key].history.push(it);
             });
 
-            // Ordenar histórico de cada produto pelo mais recente primeiro
             Object.keys(indexedProducts).forEach(k => {
                 indexedProducts[k].history.sort((a, b) => b.timestamp - a.timestamp);
                 const prices = indexedProducts[k].history.map(h => h.preco_unit).filter(p => p > 0);
                 indexedProducts[k].minPrice = Math.min(...prices);
                 indexedProducts[k].avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
                 
-                // Estabelecimento do melhor preço
                 const bestEntry = indexedProducts[k].history.find(h => h.preco_unit === indexedProducts[k].minPrice);
                 indexedProducts[k].bestPlace = bestEntry ? bestEntry.estabelecimento : 'Geral';
             });
@@ -247,7 +337,7 @@
             const matches = keys.filter(k => k.toLowerCase().includes(q)).slice(0, 8);
 
             if (matches.length === 0) {
-                panel.innerHTML = '<div style="padding: 12px; font-size: 13px; color: var(--text-muted); text-align: center;">Nenhum produto com esse nome</div>';
+                panel.innerHTML = '<div style="padding: 12px; font-size: 13px; color: var(--text-muted); text-align: center;">Nenhum produto cadastrado</div>';
                 panel.style.display = 'block';
                 return;
             }
@@ -296,7 +386,6 @@
             document.getElementById('cardAvgPrice').textContent = brl.format(prod.avgPrice);
             document.getElementById('cardTotalPurchases').textContent = `${prod.history.length}x registrado`;
 
-            // As 2 últimas compras
             const lastTwo = prod.history.slice(0, 2);
             const histHtml = lastTwo.map((h, i) => `
                 <div class="history-card last-${i + 1}">
@@ -312,8 +401,6 @@
             `).join('');
 
             document.getElementById('historyContainer').innerHTML = histHtml;
-
-            // Resetar simulador
             document.getElementById('currentShelfPrice').value = '';
             document.getElementById('verdictBox').innerHTML = '';
         }
@@ -328,20 +415,21 @@
             const prod = indexedProducts[currentSelectedKey];
             if (!prod || isNaN(price)) return;
 
-            const diffBest = ((price - prod.minPrice) / prod.minPrice) * 100;
             const diffAvg = ((price - prod.avgPrice) / prod.avgPrice) * 100;
 
             if (price <= prod.minPrice) {
-                vBox.innerHTML = `<span class="verdict-tag" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">🔥 EXCELENTE PREÇO! Igual ou menor que o recorde histórico.</span>`;
+                vBox.innerHTML = `<span class="verdict-tag" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">🔥 EXCELENTE PREÇO! Menor ou igual ao seu recorde histórico.</span>`;
             } else if (price < prod.avgPrice) {
-                vBox.innerHTML = `<span class="verdict-tag" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">✅ COMPENSA: ${Math.abs(diffAvg).toFixed(0)}% abaixo da sua média (${brl.format(prod.avgPrice)}).</span>`;
+                vBox.innerHTML = `<span class="verdict-tag" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">✅ COMPENSA: ${Math.abs(diffAvg).toFixed(0)}% abaixo da média (${brl.format(prod.avgPrice)}).</span>`;
             } else {
                 vBox.innerHTML = `<span class="verdict-tag" style="background: rgba(248, 113, 113, 0.2); color: #f87171;">⚠️ MAIS CARO: +${diffAvg.toFixed(0)}% vs sua média (${brl.format(prod.avgPrice)}).</span>`;
             }
         }
 
-        // Inicializar
-        fetchSheetData();
+        // Inicialização: carrega primeiro o que já está na memória offline. Se não houver nada, tenta sincronizar uma vez online.
+        if (!loadFromLocalStorage()) {
+            syncDataOnline();
+        }
     </script>
 </body>
 </html>
