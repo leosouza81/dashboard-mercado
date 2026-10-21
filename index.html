@@ -29,15 +29,15 @@
         .header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 18px; flex-wrap: wrap; gap: 12px; }
         .header h1 { font-size: 24px; font-weight: 700; color: #fff; }
         .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
-        
+
         .status-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(52, 211, 153, 0.15); color: #34d399; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3); }
         .status-dot { width: 8px; height: 8px; background: #34d399; border-radius: 50%; display: inline-block; }
-        
+
         /* Barra de Controle Limpa */
         .control-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; background: var(--card-bg); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
         .filter-group { display: flex; align-items: center; gap: 8px; position: relative; }
         .filter-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
-        
+
         .date-select { background: #1e293b; color: #f8fafc; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
         .date-select:focus { border-color: var(--accent); }
 
@@ -47,12 +47,12 @@
         }
         .dropdown-btn:hover { border-color: var(--accent); }
         .dropdown-btn::after { content: '▾'; font-size: 11px; color: var(--text-muted); }
-        
+
         .dropdown-panel {
             display: none; position: absolute; top: calc(100% + 6px); left: 0; background: #151d30; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; min-width: 250px; max-height: 280px; overflow-y: auto; padding: 6px;
         }
         .dropdown-panel.open { display: block; }
-        
+
         .dropdown-item {
             display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #cbd5e1; transition: background 0.15s;
         }
@@ -74,7 +74,7 @@
         .tag-pill span.remove-btn { cursor: pointer; font-weight: bold; margin-left: 2px; }
 
         .btn-reset { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; text-decoration: underline; white-space: nowrap; margin-left: auto; }
-        
+
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
         .kpi-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
@@ -87,7 +87,7 @@
         .chart-card h3 { font-size: 15px; font-weight: 600; color: #e2e8f0; }
 
         .section-title { font-size: 18px; font-weight: 600; margin: 28px 0 14px 0; color: #f1f5f9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-        
+
         /* Container Retrátil do Histórico por Estabelecimento */
         #comprasSectionWrapper {
             display: none;
@@ -101,7 +101,7 @@
         th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 10px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; position: sticky; top: 0; background: var(--card-bg); z-index: 10; white-space: nowrap; }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #cbd5e1; white-space: nowrap; }
         tr:hover { background-color: rgba(255,255,255,0.02); }
-        
+
         .badge { display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 11px; font-weight: 600; }
         .badge-prot { background: rgba(248, 113, 113, 0.18); color: #f87171; }
         .badge-merc { background: rgba(251, 191, 36, 0.18); color: #fbbf24; }
@@ -263,7 +263,7 @@
             <span style="font-size: 13px; color: var(--text-muted);" id="tableCount"></span>
         </div>
         <span id="benchmarkStatusNote" style="font-size: 12px; color: var(--accent); font-weight: 500; display: none;">
-            ✨ Modo Variação de Preços Ativo: comparando com o histórico geral
+            ✨ Modo Variação de Preços Ativo: comparando preço efetivo (já com desconto) com o histórico geral
         </span>
     </div>
     <div class="table-card">
@@ -288,7 +288,7 @@
     <script>
         // =========================================================================
         // CONFIGURAÇÃO DO GOOGLE SHEETS
-        // Cole abaixo as URLs CSV publicadas das suas abas
+        // URLs CSV publicadas das suas abas
         // =========================================================================
         const GOOGLE_SHEETS_ITENS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1163794601&single=true&output=csv';
         const GOOGLE_SHEETS_COMPRAS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6tugbUMRobTWT4c-reVocHddwfoMnSN9nZUH81Y5XAc6jTsHp_Bv4CAVaTtXv72ujgXx58ZGhhLYo/pub?gid=1241219982&single=true&output=csv';
@@ -296,13 +296,13 @@
         let rawData = [];
         let comprasData = [];
         let priceBenchmarkMap = {};
-        
+
         let selectedMonth = 'TODOS';
         let selectedCategories = new Set();
         let selectedSubcategories = new Set();
         let showBenchmarkMode = false;
         let showComprasMode = false; // Controle de visibilidade da tabela de estabelecimentos
-        
+
         let catChartInstance = null;
         let subChartInstance = null;
 
@@ -314,10 +314,10 @@
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
         ];
 
+        // Cores alinhadas às categorias geradas pela "Faxina de Dados"
         const categoryColors = {
-            "Proteínas": "#f87171",
+            "Carnes & Frios": "#f87171",
             "Mercearia": "#fbbf24",
-            "Higiene & Cuidados": "#34d399",
             "Saúde & Farmácia": "#2dd4bf",
             "Limpeza & Descartáveis": "#c084fc",
             "Hortifrúti": "#4ade80",
@@ -325,21 +325,24 @@
             "Laticínios": "#38bdf8",
             "Padaria/Matinais": "#fb923c",
             "Bebidas": "#f472b6",
-            "Casa & Decoração": "#818cf8",
-            "Vestuário & Acessórios": "#f43f5e"
+            "Combustível & Auto": "#60a5fa",
+            "Utilidades & Casa": "#818cf8",
+            "Serviços Pessoais": "#e879f9"
         };
 
         const badgeClasses = {
-            "Proteínas": "badge-prot",
+            "Carnes & Frios": "badge-prot",
             "Mercearia": "badge-merc",
             "Laticínios": "badge-lat",
             "Limpeza & Descartáveis": "badge-limp",
-            "Higiene & Cuidados": "badge-hig",
             "Saúde & Farmácia": "badge-farma",
             "Alimentação Fora": "badge-rua",
             "Padaria/Matinais": "badge-pad",
             "Bebidas": "badge-beb",
-            "Hortifrúti": "badge-horti"
+            "Hortifrúti": "badge-horti",
+            "Combustível & Auto": "badge-rua",
+            "Utilidades & Casa": "badge-limp",
+            "Serviços Pessoais": "badge-hig"
         };
 
         function parseCurrencyBR(val) {
@@ -363,23 +366,28 @@
             return '';
         }
 
+        // Aceita datas em dd/mm/aaaa e em aaaa-mm-dd
         function extractMonthYear(dateStr) {
             if (!dateStr) return { key: 'Outros', label: 'Outros', date: new Date(0) };
             const cleanDate = String(dateStr).split(' ')[0];
-            const parts = cleanDate.split('/');
-            if (parts.length === 3) {
-                const day = parseInt(parts[0], 10) || 1;
-                const month = parseInt(parts[1], 10) || 1;
-                const year = parseInt(parts[2], 10) || 2026;
-                const monthPadded = String(month).padStart(2, '0');
-                const label = `${monthNames[month - 1] || 'Mês ' + month} / ${year}`;
-                return {
-                    key: `${monthPadded}/${year}`,
-                    label: label,
-                    date: new Date(year, month - 1, day)
-                };
+
+            let day, month, year;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) {
+                [year, month, day] = cleanDate.split('-').map(Number);
+            } else {
+                const parts = cleanDate.split('/');
+                if (parts.length !== 3) return { key: 'Outros', label: 'Outros', date: new Date(0) };
+                day = parseInt(parts[0], 10) || 1;
+                month = parseInt(parts[1], 10) || 1;
+                year = parseInt(parts[2], 10) || 2026;
             }
-            return { key: 'Outros', label: 'Outros', date: new Date(0) };
+
+            const monthPadded = String(month).padStart(2, '0');
+            return {
+                key: `${monthPadded}/${year}`,
+                label: `${monthNames[month - 1] || 'Mês ' + month} / ${year}`,
+                date: new Date(year, month - 1, day)
+            };
         }
 
         function deriveComprasFromItens(itens) {
@@ -404,15 +412,12 @@
                 map[id].valor_liquido += (it.valor_total || 0);
             });
 
-            return Object.values(map).sort((a, b) => {
-                const [dA, mA, yA] = (a.data_compra || '').split('/').map(Number);
-                const [dB, mB, yB] = (b.data_compra || '').split('/').map(Number);
-                const timeA = new Date(yA || 2026, (mA || 1) - 1, dA || 1).getTime();
-                const timeB = new Date(yB || 2026, (mB || 1) - 1, dB || 1).getTime();
-                return timeB - timeA;
-            });
+            return Object.values(map).sort((a, b) =>
+                extractMonthYear(b.data_compra).date.getTime() - extractMonthYear(a.data_compra).date.getTime()
+            );
         }
 
+        // Benchmark calculado sobre o preço EFETIVO (já com desconto rateado por unidade)
         function computePriceBenchmarks(items) {
             const map = {};
             if (!items || !items.length) return map;
@@ -424,8 +429,8 @@
                 if (!map[key]) {
                     map[key] = { prices: [] };
                 }
-                if (r.preco_unitario > 0) {
-                    map[key].prices.push(r.preco_unitario);
+                if (r.preco_efetivo > 0) {
+                    map[key].prices.push(r.preco_efetivo);
                 }
             });
 
@@ -467,6 +472,12 @@
                             const precoUnit = parseCurrencyBR(getField(r, ['preco_unitario', 'preco_unit', 'valor_unitario', 'PREÇO_UNITARIO', 'preco']));
                             const qtd = parseCurrencyBR(getField(r, ['quantidade', 'qtd', 'QUANTIDADE', 'quant'])) || 1;
                             const total = parseCurrencyBR(getField(r, ['valor_total', 'total', 'VALOR_TOTAL'])) || (precoUnit * qtd);
+                            const descontoLinha = parseCurrencyBR(getField(r, ['desconto', 'DESCONTO']));
+
+                            // Preço efetivo: desconto da linha rateado por unidade
+                            const precoEfetivo = precoUnit > 0
+                                ? Math.max(precoUnit - (descontoLinha / qtd), 0)
+                                : 0;
 
                             return {
                                 id_item: getField(r, ['id_item', 'id', 'ID']) || (i + 1),
@@ -482,7 +493,8 @@
                                 quantidade: qtd,
                                 unidade: getField(r, ['unidade', 'UNIDADE', 'un']) || 'UN',
                                 preco_unitario: precoUnit,
-                                desconto: parseCurrencyBR(getField(r, ['desconto', 'DESCONTO'])),
+                                preco_efetivo: precoEfetivo,
+                                desconto: descontoLinha,
                                 valor_total: total
                             };
                         });
@@ -520,6 +532,10 @@
                                         }).filter(c => c.valor_liquido > 0 || c.total_skus > 0);
 
                                         if (parsedCompras.length > 0) {
+                                            // Mais recentes primeiro, igual à versão derivada dos itens
+                                            parsedCompras.sort((a, b) =>
+                                                extractMonthYear(b.data_compra).date.getTime() - extractMonthYear(a.data_compra).date.getTime()
+                                            );
                                             comprasData = parsedCompras;
                                             if (showComprasMode) renderComprasTable();
                                         }
@@ -572,7 +588,7 @@
             showComprasMode = !showComprasMode;
             const btn = document.getElementById('btnToggleCompras');
             const wrapper = document.getElementById('comprasSectionWrapper');
-            
+
             if (showComprasMode) {
                 btn.classList.add('active');
                 btn.innerHTML = '🏢 Ocultar Estabelecimentos';
@@ -590,7 +606,7 @@
             showBenchmarkMode = !showBenchmarkMode;
             const btn = document.getElementById('btnBenchmark');
             const note = document.getElementById('benchmarkStatusNote');
-            
+
             if (showBenchmarkMode) {
                 btn.classList.add('active');
                 btn.innerHTML = '📊 Variação de Preços: ATIVO';
@@ -643,8 +659,8 @@
             if (!panel) return;
             panel.innerHTML = '';
 
-            const dateFiltered = selectedMonth === 'TODOS' 
-                ? rawData 
+            const dateFiltered = selectedMonth === 'TODOS'
+                ? rawData
                 : rawData.filter(d => d.month_key === selectedMonth);
 
             const categories = Array.from(new Set(dateFiltered.map(d => d.categoria_macro).filter(Boolean))).sort();
@@ -680,8 +696,8 @@
             if (!panel) return;
             panel.innerHTML = '';
 
-            const dateFiltered = selectedMonth === 'TODOS' 
-                ? rawData 
+            const dateFiltered = selectedMonth === 'TODOS'
+                ? rawData
                 : rawData.filter(d => d.month_key === selectedMonth);
 
             const baseData = selectedCategories.size > 0
@@ -735,8 +751,8 @@
         function cleanupSubcategories() {
             if (selectedCategories.size === 0) return;
 
-            const dateFiltered = selectedMonth === 'TODOS' 
-                ? rawData 
+            const dateFiltered = selectedMonth === 'TODOS'
+                ? rawData
                 : rawData.filter(d => d.month_key === selectedMonth);
 
             const validSubs = new Set(
@@ -846,7 +862,7 @@
 
             const labels = Object.keys(catMap).sort((a, b) => catMap[b] - catMap[a]);
             const values = labels.map(l => catMap[l]);
-            
+
             const bgColors = labels.map(l => {
                 if (selectedCategories.size === 0 || selectedCategories.has(l)) {
                     return categoryColors[l] || '#94a3b8';
@@ -902,13 +918,13 @@
 
             const labels = Object.keys(subMap).sort((a, b) => subMap[b] - subMap[a]);
             const values = labels.map(l => subMap[l]);
-            
+
             const bgColors = labels.map(l => {
                 if (selectedSubcategories.has(l)) {
                     return '#38bdf8';
                 }
-                return selectedCategories.size === 1 
-                    ? (categoryColors[Array.from(selectedCategories)[0]] || '#a78bfa') 
+                return selectedCategories.size === 1
+                    ? (categoryColors[Array.from(selectedCategories)[0]] || '#a78bfa')
                     : '#a78bfa';
             });
 
@@ -949,12 +965,12 @@
                     },
                     scales: {
                         x: { grid: { color: '#243049' }, ticks: { color: '#94a3b8' } },
-                        y: { 
-                            grid: { color: '#243049' }, 
-                            ticks: { 
+                        y: {
+                            grid: { color: '#243049' },
+                            ticks: {
                                 color: '#94a3b8',
                                 callback: value => 'R$ ' + value.toLocaleString('pt-BR')
-                            } 
+                            }
                         }
                     },
                     plugins: {
@@ -973,7 +989,7 @@
             const tbody = document.getElementById('comprasTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            
+
             const filteredCompras = selectedMonth === 'TODOS'
                 ? comprasData
                 : comprasData.filter(c => c.month_key === selectedMonth);
@@ -1003,7 +1019,7 @@
             const tbody = document.getElementById('tableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            
+
             let titleText = '🛒 Itens Registrados';
             if (selectedMonth !== 'TODOS') {
                 const mSel = document.getElementById('monthSelect');
@@ -1019,7 +1035,7 @@
 
             const titleEl = document.getElementById('tableTitle');
             if (titleEl) titleEl.textContent = titleText;
-            
+
             const countEl = document.getElementById('tableCount');
             if (countEl) countEl.textContent = '(' + (data ? data.length : 0) + ' registros)';
 
@@ -1065,18 +1081,18 @@
             data.forEach(r => {
                 const tr = document.createElement('tr');
                 const bClass = badgeClasses[r.categoria_macro] || 'badge-merc';
-                
+
                 if (showBenchmarkMode) {
                     const prodName = r.corte_padronizado || r.descricao_original || 'Item';
                     const un = r.unidade || 'UN';
                     const benchKey = `${prodName}__${un}`;
-                    const stats = priceBenchmarkMap[benchKey] || { min: r.preco_unitario, avg: r.preco_unitario, count: 1 };
-                    
+                    const stats = priceBenchmarkMap[benchKey] || { min: r.preco_efetivo, avg: r.preco_efetivo, count: 1 };
+
                     let badgeStatus = '';
-                    if (r.preco_unitario <= (stats.min || 0) + 0.001) {
+                    if (r.preco_efetivo <= (stats.min || 0) + 0.001) {
                         badgeStatus = `<span class="pill-price-best">⭐ Menor Preço</span>`;
-                    } else if (stats.avg > 0 && r.preco_unitario > stats.avg * 1.05) {
-                        const diffPerc = ((r.preco_unitario - stats.avg) / stats.avg) * 100;
+                    } else if (stats.avg > 0 && r.preco_efetivo > stats.avg * 1.05) {
+                        const diffPerc = ((r.preco_efetivo - stats.avg) / stats.avg) * 100;
                         badgeStatus = `<span class="pill-price-high">+${diffPerc.toFixed(0)}% vs Média</span>`;
                     } else {
                         badgeStatus = `<span class="pill-price-avg">Na Média</span>`;
@@ -1089,7 +1105,7 @@
                         <td><strong>${prodName}</strong></td>
                         <td><span class="badge ${bClass}">${r.categoria_macro}</span></td>
                         <td>${numFormatter.format(r.quantidade || 1)} ${un}</td>
-                        <td style="font-weight: 700; color: #fff;">${brlFormatter.format(r.preco_unitario || 0)}</td>
+                        <td style="font-weight: 700; color: #fff;">${brlFormatter.format(r.preco_efetivo || 0)}</td>
                         <td style="color: #94a3b8;">${brlFormatter.format(stats.avg || 0)}</td>
                         <td style="color: #34d399; font-weight: 600;">${brlFormatter.format(stats.min || 0)}</td>
                         <td>${badgeStatus}</td>
