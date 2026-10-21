@@ -18,7 +18,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text-main); padding: 16px; max-width: 520px; margin: 0 auto; min-height: 100vh; }
-        
+
         .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
         .top-header h1 { font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
         .refresh-btn { background: #1e293b; color: var(--accent); border: 1px solid var(--border); padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
@@ -159,7 +159,7 @@
         function parseCSV(text) {
             const lines = text.trim().split(/\r?\n/);
             if (lines.length < 2) return [];
-            
+
             function parseRow(rowText) {
                 const entries = [];
                 let entry = '';
@@ -210,16 +210,28 @@
             return parseFloat(str) || 0;
         }
 
+        // Aceita dd/mm/aaaa e aaaa-mm-dd
         function parseDate(dateStr) {
             if (!dateStr) return new Date(0);
-            const [d, m, y] = dateStr.split(' ')[0].split('/').map(Number);
+            const clean = dateStr.split(' ')[0];
+            if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+                const [y, m, d] = clean.split('-').map(Number);
+                return new Date(y, m - 1, d);
+            }
+            const [d, m, y] = clean.split('/').map(Number);
             return new Date(y || 2026, (m || 1) - 1, d || 1);
         }
 
         // Carrega dados salvos localmente ao abrir a página
         function loadFromLocalStorage() {
-            const cachedCsv = localStorage.getItem(STORAGE_KEY_CSV);
-            const lastSync = localStorage.getItem(STORAGE_KEY_DATE);
+            let cachedCsv = null;
+            let lastSync = null;
+            try {
+                cachedCsv = localStorage.getItem(STORAGE_KEY_CSV);
+                lastSync = localStorage.getItem(STORAGE_KEY_DATE);
+            } catch (e) {
+                console.warn('localStorage indisponível', e);
+            }
             const statusEl = document.getElementById('cacheStatusText');
 
             if (cachedCsv) {
@@ -249,14 +261,18 @@
                 const cacheBusterUrl = `${CSV_URL}&_t=${Date.now()}`;
                 const res = await fetch(cacheBusterUrl);
                 if (!res.ok) throw new Error('Falha na resposta HTTP');
-                
+
                 const csvText = await res.text();
                 if (!csvText || csvText.length < 50) throw new Error('CSV recebido vazio ou incompleto');
 
                 // Salva permanentemente no navegador
                 const nowStr = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-                localStorage.setItem(STORAGE_KEY_CSV, csvText);
-                localStorage.setItem(STORAGE_KEY_DATE, nowStr);
+                try {
+                    localStorage.setItem(STORAGE_KEY_CSV, csvText);
+                    localStorage.setItem(STORAGE_KEY_DATE, nowStr);
+                } catch (e) {
+                    console.warn('Não foi possível salvar offline', e);
+                }
 
                 const rows = parseCSV(csvText);
                 processRawData(rows);
@@ -276,11 +292,17 @@
             }
         }
 
+        // preco_unit = preço EFETIVO (preço de tabela menos o desconto rateado por unidade)
         function processRawData(rows) {
             rawItems = rows.map((r, idx) => {
                 const prodName = r.corte_padronizado || r.produto_padronizado || r.descricao_original || 'Item';
                 const un = r.unidade || r.unidade_medida || 'UN';
-                const precoUnit = parseCurrencyBR(r.preco_unitario || r.preco_unit);
+                const qtd = parseCurrencyBR(r.quantidade) || 1;
+                const precoTabela = parseCurrencyBR(r.preco_unitario || r.preco_unit);
+                const descontoLinha = parseCurrencyBR(r.desconto);
+                const precoUnit = precoTabela > 0
+                    ? Math.max(precoTabela - (descontoLinha / qtd), 0)
+                    : 0;
                 const dataStr = r.data || r.data_compra || '';
                 return {
                     id: idx + 1,
@@ -290,9 +312,9 @@
                     categoria: r.categoria_macro || 'Outros',
                     produto: prodName,
                     unidade: un,
-                    quantidade: parseCurrencyBR(r.quantidade) || 1,
+                    quantidade: qtd,
                     preco_unit: precoUnit,
-                    total: parseCurrencyBR(r.valor_total || r.valor_total_item) || (precoUnit * (parseCurrencyBR(r.quantidade) || 1))
+                    total: parseCurrencyBR(r.valor_total || r.valor_total_item) || (precoUnit * qtd)
                 };
             }).filter(it => it.preco_unit > 0 || it.total > 0);
 
@@ -313,9 +335,9 @@
             Object.keys(indexedProducts).forEach(k => {
                 indexedProducts[k].history.sort((a, b) => b.timestamp - a.timestamp);
                 const prices = indexedProducts[k].history.map(h => h.preco_unit).filter(p => p > 0);
-                indexedProducts[k].minPrice = Math.min(...prices);
-                indexedProducts[k].avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
-                
+                indexedProducts[k].minPrice = prices.length ? Math.min(...prices) : 0;
+                indexedProducts[k].avgPrice = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+
                 const bestEntry = indexedProducts[k].history.find(h => h.preco_unit === indexedProducts[k].minPrice);
                 indexedProducts[k].bestPlace = bestEntry ? bestEntry.estabelecimento : 'Geral';
             });
@@ -343,7 +365,7 @@
             }
 
             panel.innerHTML = matches.map(m => `
-                <div class="suggestion-item" onclick="selectProduct('${m.replace(/'/g, "\\'")}')">
+                <div class="suggestion-item" onclick="selectProduct('${m.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
                     <span>${m}</span>
                     <span style="font-size: 12px; color: var(--accent-green); font-weight: 700;">${brl.format(indexedProducts[m].history[0].preco_unit)}</span>
                 </div>
@@ -413,7 +435,7 @@
             }
             const price = parseFloat(val);
             const prod = indexedProducts[currentSelectedKey];
-            if (!prod || isNaN(price)) return;
+            if (!prod || isNaN(price) || prod.avgPrice <= 0) return;
 
             const diffAvg = ((price - prod.avgPrice) / prod.avgPrice) * 100;
 
